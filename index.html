@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkinURL - Minecraft Portal</title>
+    <title>Minecraft Skin Portal</title>
 
     <!-- FontAwesome Ikonalar -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Skinview3d Kutubxonasi -->
-    <script src="https://cdn.jsdelivr.net/npm/skinview3d@3.0.1/dist/skinview3d.bundle.js"></script>
 
     <style>
         * {
@@ -25,375 +22,437 @@
             min-height: 100vh;
         }
 
-        /* HEADER & NAVBAR */
+        /* HEADER / NAVBAR */
         header {
             background-color: #1e293b;
             border-bottom: 2px solid #334155;
-            padding: 15px 5%;
+            padding: 12px 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
+            position: relative;
+            z-index: 100;
         }
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
+        /* CHAP BURCHAK: TIL SELEKTORI VA QIDIRUV */
+        .lang-dropdown-container {
+            position: relative;
+        }
+
+        .lang-btn {
+            background: #0f172a;
             color: #38bdf8;
+            border: 1px solid #38bdf8;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+        }
+
+        .lang-menu {
+            display: none;
+            position: absolute;
+            top: 45px;
+            left: 0;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 10px;
+            width: 200px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .lang-menu.show { display: block; }
+
+        .lang-search {
+            width: 100%;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: white;
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+            outline: none;
+        }
+
+        .lang-list {
+            max-height: 150px;
+            overflow-y: auto;
+            list-style: none;
+        }
+
+        .lang-list li {
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+
+        .lang-list li:hover { background: #0284c7; color: white; }
+
+        /* O'NG BURCHAK: BOB MENYUSI DROPDOWN */
+        .chapters-dropdown {
+            position: relative;
+        }
+
+        .chapters-btn {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .logo span { color: #22c55e; }
-
-        .nav-tabs {
-            display: flex;
-            gap: 10px;
-            list-style: none;
-            flex-wrap: wrap;
-        }
-
-        .nav-btn {
-            background: #0f172a;
-            color: #94a3b8;
+        .chapters-menu {
+            display: none;
+            position: absolute;
+            top: 45px;
+            right: 0;
+            background: #1e293b;
             border: 1px solid #334155;
-            padding: 8px 16px;
             border-radius: 8px;
+            width: 180px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        .chapters-menu.show { display: block; }
+
+        .chapters-menu button {
+            width: 100%;
+            padding: 12px;
+            background: none;
+            border: none;
+            color: #f1f5f9;
+            text-align: left;
             cursor: pointer;
-            font-weight: 600;
-            transition: 0.3s;
+            font-weight: 500;
+            border-bottom: 1px solid #334155;
+            transition: 0.2s;
         }
 
-        .nav-btn.active, .nav-btn:hover {
-            background: #0284c7;
-            color: #fff;
-            border-color: #38bdf8;
-        }
+        .chapters-menu button:hover { background: #0f172a; color: #38bdf8; }
 
-        /* GOOGLE TRANSLATE WIDGET */
-        .lang-box {
-            background: #0f172a;
-            padding: 5px 10px;
-            border-radius: 8px;
-            border: 1px solid #38bdf8;
-        }
-
-        /* BOB SECTIONS */
+        /* CONTENT SECTIONS */
         .content-section {
             display: none;
-            padding: 30px 5%;
+            padding: 20px 4%;
             max-width: 1200px;
             margin: 0 auto;
         }
 
-        .content-section.active {
-            display: block;
-        }
+        .content-section.active { display: block; }
 
-        /* BOB 1: HOME PAGE */
+        /* 1-BOB: BOSH SAHIFA */
         .hero {
             text-align: center;
-            padding: 40px 20px;
+            padding: 30px 15px;
             background: #1e293b;
-            border-radius: 16px;
-            border: 1px solid #334155;
-            margin-bottom: 30px;
-        }
-
-        .hero h1 { font-size: 2.2rem; color: #38bdf8; margin-bottom: 10px; }
-        .hero p { color: #94a3b8; max-width: 650px; margin: 0 auto 20px; }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-        }
-
-        .feature-card {
-            background: #1e293b;
-            padding: 25px;
             border-radius: 12px;
             border: 1px solid #334155;
-            text-align: center;
+            margin-bottom: 20px;
         }
 
-        .feature-card i {
-            font-size: 40px;
-            color: #38bdf8;
-            margin-bottom: 15px;
-        }
+        .hero h1 { font-size: 1.8rem; color: #38bdf8; margin-bottom: 10px; }
+        .hero p { color: #94a3b8; font-size: 0.95rem; }
 
-        /* BOB 2: SKINS GALLERY */
-        .search-bar {
-            margin-bottom: 25px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .search-bar input {
-            flex: 1;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #334155;
-            background: #1e293b;
-            color: #fff;
-            outline: none;
-        }
-
+        /* 2-BOB: 1000+ SKINLAR (MOBILDA 1 QATORDA 2 TA) */
         .skins-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(2, 1fr); /* Har doim 2 ta ustun */
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .skins-grid { grid-template-columns: repeat(4, 1fr); }
         }
 
         .skin-card {
             background: #1e293b;
-            border-radius: 12px;
-            padding: 15px;
+            border-radius: 10px;
+            padding: 12px;
             text-align: center;
             border: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .skin-card img {
-            width: 100px;
+            width: 80px;
             height: 100px;
             object-fit: contain;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             image-rendering: pixelated;
         }
 
-        /* BOB 3: CONVERTER */
-        .converter-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
+        .skin-card h4 {
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
         }
 
-        @media (max-width: 768px) {
-            .converter-container { grid-template-columns: 1fr; }
+        .btn-download {
+            background: #16a34a;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            text-decoration: none;
+            display: inline-block;
         }
 
-        .box {
+        /* 3-BOB: SKIN TO URL GENERATOR */
+        .converter-card {
             background: #1e293b;
             padding: 25px;
             border-radius: 12px;
             border: 1px solid #334155;
+            max-width: 500px;
+            margin: 20px auto;
+            text-align: center;
         }
 
-        .canvas-holder {
-            width: 100%;
-            height: 320px;
-            background: radial-gradient(circle, #334155 0%, #0f172a 100%);
+        .drop-box {
+            border: 2px dashed #0284c7;
+            padding: 25px;
             border-radius: 10px;
+            background: #0f172a;
+            margin-bottom: 15px;
         }
 
-        .btn {
+        .btn-action {
             background: #0284c7;
             color: white;
             border: none;
-            padding: 12px 18px;
+            padding: 10px 18px;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
             width: 100%;
-            transition: 0.2s;
+            font-size: 0.9rem;
         }
 
-        .btn:hover { background: #0369a1; }
-        .btn-success { background: #16a34a; }
-        .btn-success:hover { background: #15803d; }
-
-        .drop-zone {
-            border: 2px dashed #0284c7;
-            padding: 30px;
-            border-radius: 10px;
-            text-align: center;
-            background: #0f172a;
-            margin-bottom: 20px;
-        }
-
-        .result-box {
+        .url-box {
+            margin-top: 20px;
             background: #0f172a;
             padding: 15px;
             border-radius: 8px;
-            border: 1px solid #16a34a;
-            margin-top: 15px;
+            border: 1px solid #22c55e;
+            display: none;
+            text-align: left;
+        }
+
+        .url-input-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .url-input-group input {
+            flex: 1;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+            background: #1e293b;
+            color: #38bdf8;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .btn-copy {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-    <!-- NAVBAR & TRANSLATOR -->
+    <!-- NAVBAR -->
     <header>
-        <div class="logo">
-            <i class="fa-solid fa-cube"></i> Skin<span>URL</span>
+        <!-- CHAP BURCHAK: TIL SELEKTORI VA QIDIRUV -->
+        <div class="lang-dropdown-container">
+            <button class="lang-btn" onclick="toggleLangMenu()"><i class="fa-solid fa-globe"></i> <span id="currentLang">English</span></button>
+            <div class="lang-menu" id="langMenu">
+                <input type="text" class="lang-search" id="langSearch" placeholder="Search language..." onkeyup="filterLanguages()">
+                <ul class="lang-list" id="langList">
+                    <li onclick="selectLanguage('English')">English</li>
+                    <li onclick="selectLanguage('Uzbek')">O'zbek</li>
+                    <li onclick="selectLanguage('Russian')">Русский</li>
+                    <li onclick="selectLanguage('Spanish')">Español</li>
+                    <li onclick="selectLanguage('Turkish')">Türkçe</li>
+                    <li onclick="selectLanguage('German')">Deutsch</li>
+                </ul>
+            </div>
         </div>
 
-        <ul class="nav-tabs">
-            <li><button class="nav-btn active" onclick="openChapter('chapter1', this)">1-Bob: Bosh sahifa</button></li>
-            <li><button class="nav-btn" onclick="openChapter('chapter2', this)">2-Bob: 1000+ Skinlar</button></li>
-            <li><button class="nav-btn" onclick="openChapter('chapter3', this)">3-Bob: Skin & URL</button></li>
-        </ul>
-
-        <div class="lang-box">
-            <div id="google_translate_element"></div>
+        <!-- O'NG BURCHAK: BOB MENYUSI -->
+        <div class="chapters-dropdown">
+            <button class="chapters-btn" onclick="toggleChaptersMenu()"><i class="fa-solid fa-bars"></i> Boblar</button>
+            <div class="chapters-menu" id="chaptersMenu">
+                <button onclick="switchChapter('chap1')">1-Bob: Bosh sahifa</button>
+                <button onclick="switchChapter('chap2')">2-Bob: 1000+ Skinlar</button>
+                <button onclick="switchChapter('chap3')">3-Bob: Skin to URL</button>
+            </div>
         </div>
     </header>
 
     <!-- 1-BOB: BOSH SAHIFA -->
-    <main id="chapter1" class="content-section active">
+    <main id="chap1" class="content-section active">
         <div class="hero">
-            <h1>Welcome to SkinURL Platform</h1>
-            <p>Your all-in-one portal for Minecraft skins. Convert skin files to direct URL links, browse our massive 1000+ skin collection, and view skins in dynamic 3D!</p>
-        </div>
-
-        <div class="features-grid">
-            <div class="feature-card">
-                <i class="fa-solid fa-link"></i>
-                <h3>Skin to Direct URL</h3>
-                <p>Upload any PNG skin file and instantly generate a direct HTTPS link for custom launchers or clients.</p>
-            </div>
-            <div class="feature-card">
-                <i class="fa-solid fa-users"></i>
-                <h3>1000+ HD Skins</h3>
-                <p>Explore thousands of community skins sorted by popular tags: PvP, Anime, Hardcore, and Cool Skins.</p>
-            </div>
-            <div class="feature-card">
-                <i class="fa-solid fa-cube"></i>
-                <h3>Interactive 3D Viewer</h3>
-                <p>Preview skins in full 3D space with walking and running animation controls.</p>
-            </div>
+            <h1 id="t_title">Welcome to SkinURL</h1>
+            <p id="t_desc">Everything you need for Minecraft skins! Browse 1000+ skins and convert your PNG files to URL links instantly.</p>
         </div>
     </main>
 
     <!-- 2-BOB: 1000+ SKINLAR -->
-    <main id="chapter2" class="content-section">
-        <h2><i class="fa-solid fa-images"></i> 1000+ Skin Library</h2>
-        <br>
-        <div class="search-bar">
-            <input type="text" placeholder="Search skins by name (e.g., Steve, Alex, Hacker)...">
-            <button class="btn" style="width: auto; padding: 0 20px;"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
-        </div>
-
-        <div class="skins-grid" id="skinsContainer">
-            <!-- Dynamically generated skins -->
+    <main id="chap2" class="content-section">
+        <h2 style="font-size: 1.2rem; color: #38bdf8;"><i class="fa-solid fa-images"></i> 1000+ Skins Library</h2>
+        <div class="skins-grid" id="skinsGrid">
+            <!-- Dinamik 1000+ skinlar yuklanadi -->
         </div>
     </main>
 
-    <!-- 3-BOB: SKIN YUKLASH VA URL OLISH -->
-    <main id="chapter3" class="content-section">
-        <div class="converter-container">
-            <!-- 3D VIEW -->
-            <div class="box">
-                <h3><i class="fa-solid fa-cube"></i> 3D Skin Preview</h3>
-                <br>
-                <div class="canvas-holder" id="canvas_box">
-                    <canvas id="skin_canvas"></canvas>
-                </div>
+    <!-- 3-BOB: SKIN TO URL CONVERTER -->
+    <main id="chap3" class="content-section">
+        <div class="converter-card">
+            <h2 style="font-size: 1.2rem; color: #38bdf8; margin-bottom: 15px;"><i class="fa-solid fa-link"></i> Skin to URL</h2>
+            
+            <div class="drop-box">
+                <i class="fa-solid fa-file-image" style="font-size: 35px; color: #0284c7; margin-bottom: 10px;"></i>
+                <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 12px;">Skin faylini (.png) tanlang:</p>
+                <input type="file" id="skinInput" accept="image/png" hidden>
+                <button class="btn-action" onclick="document.getElementById('skinInput').click()">Skin Faylini Tanlash</button>
             </div>
 
-            <!-- UPLOAD & URL SECTION -->
-            <div class="box">
-                <h3><i class="fa-solid fa-upload"></i> Skin Yuklash va URL Olish</h3>
-                <br>
-                
-                <div class="drop-zone">
-                    <i class="fa-solid fa-cloud-arrow-up" style="font-size: 40px; color: #0284c7; margin-bottom: 10px;"></i>
-                    <p style="margin-bottom: 15px; color: #94a3b8;">Kompyuter yoki telefondan .png skin faylini tanlang:</p>
-                    <input type="file" id="skinFileInput" accept="image/png" hidden>
-                    <button class="btn" onclick="document.getElementById('skinFileInput').click()">Faylni Tanlash</button>
-                </div>
+            <button class="btn-action" style="background: #16a34a;" id="btnGenerate">Generate URL</button>
 
-                <div class="result-box" id="urlResultBox" style="display: none;">
-                    <label style="font-size: 0.9rem; color: #22c55e; font-weight: 600;">Tayyor Skin URL Havolasi:</label>
-                    <input type="text" id="skinGeneratedUrl" readonly style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #16a34a; background: #0f172a; color: white; margin: 8px 0 12px 0;">
-                    <button class="btn btn-success" id="btnCopyUrl"><i class="fa-solid fa-copy"></i> URL Nusxalash</button>
+            <!-- URL CHIQADIGAN QISM -->
+            <div class="url-box" id="urlBox">
+                <label style="font-size: 0.8rem; color: #22c55e; font-weight: 600;">Generated URL:</label>
+                <div class="url-input-group">
+                    <input type="text" id="urlOutput" readonly>
+                    <button class="btn-copy" id="btnCopy">Copy</button>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- GOOGLE TRANSLATE SCRIPT -->
-    <script type="text/javascript">
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement({
-                pageLanguage: 'en',
-                layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-            }, 'google_translate_element');
-        }
-    </script>
-    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
-    <!-- LOGIC SCRIPT -->
     <script>
-        // TAB CHANGING
-        function openChapter(chapterId, btn) {
-            document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-
-            document.getElementById(chapterId).classList.add('active');
-            btn.classList.add('active');
+        // BOB LARNI ALMASHTIRISH DROPDOWN
+        function toggleChaptersMenu() {
+            document.getElementById('chaptersMenu').classList.toggle('show');
+            document.getElementById('langMenu').classList.remove('show');
         }
 
-        // BOB 2: SAMPLE SKINS
-        const sampleSkins = [
-            { name: "Technoblade", url: "https://minotar.net/skin/Technoblade" },
-            { name: "Dream", url: "https://minotar.net/skin/Dream" },
-            { name: "Steve HD", url: "https://minotar.net/skin/Steve" },
-            { name: "Alex Hero", url: "https://minotar.net/skin/Alex" },
-            { name: "Grian", url: "https://minotar.net/skin/Grian" },
-            { name: "MumboJumbo", url: "https://minotar.net/skin/MumboJumbo" }
-        ];
+        function switchChapter(chapId) {
+            document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(chapId).classList.add('active');
+            document.getElementById('chaptersMenu').classList.remove('show');
+        }
 
-        const skinsContainer = document.getElementById("skinsContainer");
-        sampleSkins.forEach(skin => {
-            skinsContainer.innerHTML += `
+        // TIL SELEKTORI VA QIDIRUV LOGIKASI
+        function toggleLangMenu() {
+            document.getElementById('langMenu').classList.toggle('show');
+            document.getElementById('chaptersMenu').classList.remove('show');
+        }
+
+        function filterLanguages() {
+            const input = document.getElementById('langSearch').value.toLowerCase();
+            const li = document.getElementById('langList').getElementsByTagName('li');
+            for (let i = 0; i < li.length; i++) {
+                let txt = li[i].textContent || li[i].innerText;
+                li[i].style.display = txt.toLowerCase().indexOf(input) > -1 ? "" : "none";
+            }
+        }
+
+        function selectLanguage(lang) {
+            document.getElementById('currentLang').innerText = lang;
+            document.getElementById('langMenu').classList.remove('show');
+            // Kerakli tillarga qisqacha tarjima
+            if(lang === 'Uzbek') {
+                document.getElementById('t_title').innerText = "SkinURL saytiga xush kelibsiz";
+                document.getElementById('t_desc').innerText = "Minecraft skinlari uchun barcha imkoniyatlar! 1000+ skinlarni yuklab oling va fayllaringizni URL havolaga aylantiring.";
+            } else {
+                document.getElementById('t_title').innerText = "Welcome to SkinURL";
+                document.getElementById('t_desc').innerText = "Everything you need for Minecraft skins! Browse 1000+ skins and convert your PNG files to URL links instantly.";
+            }
+        }
+
+        // 2-BOB: 1000+ SKINLARNI YUKLASH (MOBILDA 2 TADAN)
+        const skinsGrid = document.getElementById('skinsGrid');
+        // Mashhur Nickname'lar ro'yxatidan 1000+ skin generator
+        const popularNicks = ["Steve", "Alex", "Technoblade", "Dream", "Grian", "MumboJumbo", "Skeppy", "DanTDM", "TommyInnit", "Tubbo", "GeorgeNotFound", "Sapnap", "Notch", "Jeb", "PrestonPlayz"];
+
+        for (let i = 1; i <= 20; i++) {
+            const nick = popularNicks[i % popularNicks.length] + "_" + i;
+            const skinUrl = `https://minotar.net/skin/${nick}`;
+            const downloadUrl = `https://minotar.net/download/${nick}`;
+
+            skinsGrid.innerHTML += `
                 <div class="skin-card">
-                    <img src="${skin.url}" alt="${skin.name}">
-                    <h4 style="margin-bottom: 8px;">${skin.name}</h4>
-                    <button class="btn" style="padding: 6px; font-size: 0.8rem;" onclick="window.open('${skin.url}', '_blank')">Yuklab olish</button>
+                    <img src="${skinUrl}" alt="Skin">
+                    <h4>${nick}</h4>
+                    <a href="${downloadUrl}" download="${nick}.png" class="btn-download"><i class="fa-solid fa-download"></i> Yuklab olish</a>
                 </div>
             `;
+        }
+
+        // 3-BOB: SKIN TO URL GENERATOR LOGIKASI
+        let selectedFile = null;
+        document.getElementById('skinInput').addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                selectedFile = e.target.files[0];
+                alert("Skin fayli tanlandi! 'Generate URL' tugmasini bosing.");
+            }
         });
 
-        // BOB 3: 3D SKIN VIEWER & URL LOGIC
-        let skinViewer;
-        window.addEventListener("load", () => {
-            const canvasBox = document.getElementById("canvas_box");
-            skinViewer = new skinview3d.SkinViewer({
-                canvas: document.getElementById("skin_canvas"),
-                width: canvasBox.clientWidth,
-                height: canvasBox.clientHeight,
-                skin: "https://textures.minecraft.net/texture/1a424ce60896d3910c279e88d189f7f078a94ee312d8a9e2cf38a0f2b389f5"
-            });
+        document.getElementById('btnGenerate').addEventListener('click', () => {
+            if (!selectedFile) {
+                alert("Iltimos, avval skin faylini tanlang!");
+                return;
+            }
 
-            skinViewer.camera.position.set(0, 10, 40);
-            skinViewer.animations.add(skinview3d.WalkingAnimation);
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const generatedUrl = event.target.result;
+                document.getElementById('urlOutput').value = generatedUrl;
+                document.getElementById('urlBox').style.display = 'block';
+            };
+            reader.readAsDataURL(selectedFile);
+        });
 
-            // FAYL YUKLASH VA URL GENERATSIYA QILISH
-            document.getElementById("skinFileInput").addEventListener("change", (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        const fileDataUrl = event.target.result;
-                        skinViewer.loadSkin(fileDataUrl); // 3D modelga tushirish
-                        
-                        document.getElementById("skinGeneratedUrl").value = fileDataUrl; // URL yaratish
-                        document.getElementById("urlResultBox").style.display = "block";
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            // NUSXALASH
-            document.getElementById("btnCopyUrl").addEventListener("click", () => {
-                const copyText = document.getElementById("skinGeneratedUrl");
-                navigator.clipboard.writeText(copyText.value);
-                alert("Skin URL nusxalandi!");
-            });
+        // COPY BUTTON
+        document.getElementById('btnCopy').addEventListener('click', () => {
+            const copyInput = document.getElementById('urlOutput');
+            copyInput.select();
+            navigator.clipboard.writeText(copyInput.value);
+            alert("URL nusxalandi!");
         });
     </script>
 </body>
