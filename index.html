@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkinURL - Minecraft Skins & Tools</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/viewer.css">
+    <!-- Font Awesome Ikonalar uchun -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Skinview3d Kutubxonasi -->
+    <script src="https://bs-community.github.io/skinview3d/js/skinview3d.bundle.js"></script>
+</head>
+<body>
+
+    <!-- NAVIGATSIYA BAR -->
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-cube"></i> Skin<span>URL</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="index.html" class="active"><i class="fa-solid fa-house"></i> Bosh sahifa</a></li>
+            <li><a href="pages/gallery.html"><i class="fa-solid fa-images"></i> Gallereya</a></li>
+            <li><a href="pages/editor.html"><i class="fa-solid fa-pen-ruler"></i> Redaktor</a></li>
+            <li><a href="pages/tools.html"><i class="fa-solid fa-wrench"></i> Instrumentlar</a></li>
+        </ul>
+    </nav>
+
+    <!-- ASOSIY BO'LIM -->
+    <main class="main-container">
+        
+        <!-- CHAP TARAFLIK: 3D VIEWER -->
+        <section class="viewer-section">
+            <h2>3D Skin Ko'rinishi</h2>
+            <div class="canvas-container">
+                <canvas id="skin_container"></canvas>
+            </div>
+            
+            <div class="viewer-controls">
+                <button id="btn_rotate" class="btn-secondary"><i class="fa-solid fa-rotate"></i> Aylantirish</button>
+                <button id="btn_walk" class="btn-secondary"><i class="fa-solid fa-person-walking"></i> Yurish</button>
+                <button id="btn_run" class="btn-secondary"><i class="fa-solid fa-person-running"></i> Yugurish</button>
+            </div>
+        </section>
+
+        <!-- O'NG TARAFLIK: UPLOAD VA URL GENERATOR -->
+        <section class="tools-section">
+            <h2>Skin Yuklash & URL Yaratish</h2>
+            
+            <div class="drop-zone" id="drop_zone">
+                <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                <p>Skin faylini (PNG) bu yerga tashlang yoki tanlang</p>
+                <input type="file" id="skin_input" accept="image/png" hidden>
+                <button class="btn-primary" onclick="document.getElementById('skin_input').click()">Fayl Tanlash</button>
+            </div>
+
+            <!-- NIK BO'YICHA QIDIRISH -->
+            <div class="nickname-box">
+                <label for="mc_username">Minecraft Nik bilan yuklash:</label>
+                <div class="input-group">
+                    <input type="text" id="mc_username" placeholder="Masalan: Steve">
+                    <button id="btn_fetch_username" class="btn-primary">Yuklash</button>
+                </div>
+            </div>
+
+            <!-- RESULT / URL GENERATED -->
+            <div class="result-box" id="result_box" style="display: none;">
+                <h3>Tayyor Skin Havolasi (URL):</h3>
+                <div class="input-group">
+                    <input type="text" id="generated_url" readonly>
+                    <button id="btn_copy" class="btn-success"><i class="fa-solid fa-copy"></i> Nusxalash</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="js/skin3d.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
