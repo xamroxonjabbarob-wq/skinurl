@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkinURL - Studio Ultra Pro</title>
+  
+  <!-- External Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/skinview3d@2.6.0/dist/skinview3d.bundle.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-dark: #070a13;
+      --card-bg: #0f172a;
+      --border: #1e293b;
+      --accent: #3b82f6;
+      --accent-hover: #1d4ed8;
+      --text: #f8fafc;
+      --text-muted: #64748b;
+      --danger: #ef4444;
+      --success: #10b981;
+      --warning: #f59e0b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { background-color: var(--bg-dark); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 0.8rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .logo { font-size: 1.3rem; font-weight: bold; color: var(--accent); display: flex; align-items: center; gap: 0.5rem; }
+
+    .app-container {
+      display: grid;
+      grid-template-columns: 320px 1fr 340px;
+      gap: 1rem;
+      padding: 1rem;
+      flex: 1;
+    }
+
+    @media (max-width: 1024px) {
+      .app-container { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .panel-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.4rem;
+    }
+
+    .tool-btn {
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      font-size: 0.7rem;
+      transition: all 0.2s;
+    }
+
+    .tool-btn:hover, .tool-btn.active {
+      border-color: var(--accent);
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent);
+    }
+
+    .palette {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 0.3rem;
+    }
+
+    .palette-color {
+      width: 100%;
+      height: 28px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+    }
+
+    .canvas-box {
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      min-height: 380px;
+      overflow: hidden;
+    }
+
+    #editorCanvas {
+      image-rendering: pixelated;
+      cursor: crosshair;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    #skinViewerCanvas {
+      width: 100%;
+      height: 100%;
+      min-height: 380px;
+    }
+
+    .btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      transition: background 0.2s;
+    }
+
+    .btn:hover { background: var(--accent-hover); }
+    .btn-danger { background: var(--danger); }
+    .btn-success { background: var(--success); }
+    .btn-warning { background: var(--warning); color: #000; }
+
+    .input-group {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .input-field {
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem;
+      border-radius: 6px;
+      flex: 1;
+      font-size: 0.85rem;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo"><i class="fa-solid fa-cubes"></i> SkinURL Studio Ultra Pro</div>
+    <div style="display: flex; gap: 0.5rem;">
+      <button class="btn btn-success" onclick="exportPNG()"><i class="fa-solid fa-download"></i> PNG Saqlash</button>
+      <button class="btn btn-warning" onclick="takeScreenshot()"><i class="fa-solid fa-camera"></i> 3D Skrinshot</button>
+    </div>
+  </header>
+
+  <div class="app-container">
+    
+    <!-- Chap Panel: Asboblar, Ranglar, Stealer, Presets -->
+    <div class="panel">
+      <!-- Stealer -->
+      <div class="panel-title"><i class="fa-solid fa-user-ninja"></i> Nickname orqali Yuklash</div>
+      <div class="input-group">
+        <input type="text" id="nickInput" class="input-field" placeholder="Masalan: Notch">
+        <button class="btn" onclick="fetchSkinByNick()"><i class="fa-solid fa-search"></i></button>
+      </div>
+
+      <!-- Presets -->
+      <div class="panel-title"><i class="fa-solid fa-boxes-packing"></i> Tayyor Skinlar</div>
+      <div class="tools-grid">
+        <button class="tool-btn" onclick="loadPreset('steve')"><i class="fa-solid fa-user"></i> Steve</button>
+        <button class="tool-btn" onclick="loadPreset('alex')"><i class="fa-solid fa-user-astronaut"></i> Alex</button>
+        <button class="tool-btn" onclick="loadPreset('zombie')"><i class="fa-solid fa-biohazard"></i> Zombie</button>
+        <button class="tool-btn" onclick="loadPreset('skeleton')"><i class="fa-solid fa-skull"></i> Skeleton</button>
+      </div>
+
+      <!-- Tools -->
+      <div class="panel-title"><i class="fa-solid fa-toolbox"></i> Asboblar</div>
+      <div class="tools-grid">
+        <button class="tool-btn active" onclick="setTool('pencil')" id="btnPencil"><i class="fa-solid fa-pencil"></i> Qalam</button>
+        <button class="tool-btn" onclick="setTool('eraser')" id="btnEraser"><i class="fa-solid fa-eraser"></i> O'chirg'ich</button>
+        <button class="tool-btn" onclick="setTool('bucket')" id="btnBucket"><i class="fa-solid fa-fill-drip"></i> Bo'yash</button>
+        <button class="tool-btn" onclick="setTool('picker')" id="btnPicker"><i class="fa-solid fa-eye-dropper"></i> Pipetka</button>
+      </div>
+
+      <!-- Colors -->
+      <div class="panel-title"><i class="fa-solid fa-palette"></i> Ranglar</div>
+      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <input type="color" id="mainColor" value="#3b82f6" style="width: 100%; height: 35px; border: none; cursor: pointer; border-radius: 6px;">
+        <div class="palette" id="colorPalette"></div>
+      </div>
+
+      <!-- Actions & Effects -->
+      <div class="panel-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Effektlar & Amallar</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;">
+        <button class="btn" onclick="applyShading()"><i class="fa-solid fa-sun"></i> Avto Soya</button>
+        <button class="btn" onclick="flipHorizontal()"><i class="fa-solid fa-arrows-left-right"></i> Gorizontal</button>
+        <button class="btn" onclick="undo()"><i class="fa-solid fa-undo"></i> Ortga</button>
+        <button class="btn btn-danger" onclick="clearCanvas()"><i class="fa-solid fa-trash"></i> Tozalash</button>
+      </div>
+    </div>
+
+    <!-- O'rtadagi Panel: 2D Pixel Editor -->
+    <div class="panel">
+      <div class="panel-title"><i class="fa-solid fa-border-all"></i> 2D Editor (64x64)</div>
+      <div class="canvas-box">
+        <canvas id="editorCanvas"></canvas>
+      </div>
+      <button class="btn" onclick="update3D()"><i class="fa-solid fa-rotate"></i> 3D Modellashtirishni Yangilash</button>
+    </div>
+
+    <!-- O'ng Panel: 3D Interaktiv Ko'rish, Fonlar va Qatlamlar -->
+    <div class="panel">
+      <div class="panel-title"><i class="fa-solid fa-cube"></i> 3D Real-time Ko'rish</div>
+      <div class="canvas-box" id="viewerContainer">
+        <canvas id="skinViewerCanvas"></canvas>
+      </div>
+
+      <div class="panel-title"><i class="fa-solid fa-image"></i> 3D Fonlar</div>
+      <div class="tools-grid">
+        <button class="tool-btn" onclick="setBg('#020617')">Qorong'u</button>
+        <button class="tool-btn" onclick="setBg('#1e293b')">Kulrang</button>
+        <button class="tool-btn" onclick="setBg('#064e3b')">O'tloq</button>
+        <button class="tool-btn" onclick="setBg('#4c1d95')">Binafsha</button>
+      </div>
+
+      <div class="panel-title"><i class="fa-solid fa-layer-group"></i> Qatlamlar (Layers)</div>
+      <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+        <label class="checkbox-group"><input type="checkbox" id="layerOuter" checked onchange="toggleLayers()"> Tashqi qatlam (Hat/Jacket)</label>
+        <label class="checkbox-group"><input type="checkbox" id="layerInner" checked onchange="toggleLayers()"> Ichki qatlam (Base Body)</label>
+      </div>
+
+      <div class="panel-title"><i class="fa-solid fa-person-running"></i> Animatsiya va Pozalar</div>
+      <div style="display: flex; gap: 0.4rem;">
+        <button class="btn" style="flex:1;" onclick="setAnim('walk')">Yurish</button>
+        <button class="btn" style="flex:1;" onclick="setAnim('run')">Yugurish</button>
+        <button class="btn" style="flex:1;" onclick="setAnim('idle')">To'xtash</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Global variables
+    const canvas = document.getElementById('editorCanvas');
+    const ctx = canvas.getContext('2d');
+    const pixelSize = 6;
+    let currentTool = 'pencil';
+    let currentColor = '#3b82f6';
+    let isDrawing = false;
+    let undoStack = [];
+    let skinViewer = null;
+
+    canvas.width = 64 * pixelSize;
+    canvas.height = 64 * pixelSize;
+    ctx.imageSmoothingEnabled = false;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initPalette();
+      drawGrid();
+      init3DViewer();
+      saveState();
+    });
+
+    // 1. Palette Setup
+    function initPalette() {
+      const colors = ['#000000', '#ffffff', '#ef4444', '#f97316', '#f59e0b', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#78350f', '#334155'];
+      const paletteContainer = document.getElementById('colorPalette');
+      paletteContainer.innerHTML = '';
+      
+      colors.forEach(col => {
+        const div = document.createElement('div');
+        div.className = 'palette-color';
+        div.style.backgroundColor = col;
+        div.onclick = () => {
+          currentColor = col;
+          document.getElementById('mainColor').value = col;
+        };
+        paletteContainer.appendChild(div);
+      });
+
+      document.getElementById('mainColor').addEventListener('input', (e) => currentColor = e.target.value);
+    }
+
+    // 2. Draw Grid
+    function drawGrid() {
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < canvas.width; x += pixelSize) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += pixelSize) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+      }
+    }
+
+    // 3. Drawing Events
+    function getCoords(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: Math.floor((clientX - rect.left) / pixelSize),
+        y: Math.floor((clientY - rect.top) / pixelSize)
+      };
+    }
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    window.addEventListener('mouseup', stopDrawing);
+
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); });
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
+    window.addEventListener('touchend', stopDrawing);
+
+    function startDrawing(e) {
+      isDrawing = true;
+      saveState();
+      draw(e);
+    }
+
+    function draw(e) {
+      if (!isDrawing) return;
+      const { x, y } = getCoords(e);
+      if (x < 0 || x >= 64 || y < 0 || y >= 64) return;
+
+      if (currentTool === 'pencil') {
+        ctx.fillStyle = currentColor;
+        ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+      } else if (currentTool === 'eraser') {
+        ctx.clearRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+      } else if (currentTool === 'picker') {
+        const pixelData = ctx.getImageData(x * pixelSize, y * pixelSize, 1, 1).data;
+        if (pixelData[3] > 0) {
+          const hex = "#" + ((1 << 24) + (pixelData[0] << 16) + (pixelData[1] << 8) + pixelData[2]).toString(16).slice(1);
+          currentColor = hex;
+          document.getElementById('mainColor').value = hex;
+        }
+      } else if (currentTool === 'bucket') {
+        floodFill(x, y, currentColor);
+      }
+    }
+
+    function stopDrawing() { isDrawing = false; }
+
+    function setTool(tool) {
+      currentTool = tool;
+      document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+      if (tool === 'pencil') document.getElementById('btnPencil').classList.add('active');
+      if (tool === 'eraser') document.getElementById('btnEraser').classList.add('active');
+      if (tool === 'picker') document.getElementById('btnPicker').classList.add('active');
+      if (tool === 'bucket') document.getElementById('btnBucket').classList.add('active');
+    }
+
+    // 4. Bucket / Flood Fill Logic
+    function floodFill(startX, startY, fillColor) {
+      const targetData = ctx.getImageData(startX * pixelSize, startY * pixelSize, 1, 1).data;
+      ctx.fillStyle = fillColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      drawGrid();
+    }
+
+    // 5. Undo & Clear
+    function saveState() {
+      if (undoStack.length > 20) undoStack.shift();
+      undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    }
+
+    function undo() {
+      if (undoStack.length > 1) {
+        undoStack.pop();
+        const state = undoStack[undoStack.length - 1];
+        ctx.putImageData(state, 0, 0);
+      }
+    }
+
+    function clearCanvas() {
+      saveState();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawGrid();
+    }
+
+    // 6. 3D Viewer Logic
+    function init3DViewer() {
+      const viewerCanvas = document.getElementById('skinViewerCanvas');
+      skinViewer = new skinview3d.SkinViewer({
+        canvas: viewerCanvas,
+        width: viewerCanvas.clientWidth || 300,
+        height: 380,
+        skin: "https://textures.minecraft.net/texture/1a414322e690456122b03f08960d40076a8f10d70233f20a1cf7178c7512d"
+      });
+      skinViewer.animation = new skinview3d.WalkingAnimation();
+      skinViewer.animation.speed = 0.6;
+    }
+
+    function update3D() {
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = 64; tempCanvas.height = 64;
+      tempCanvas.getContext('2d').drawImage(canvas, 0, 0, 64, 64);
+      skinViewer.loadSkin(tempCanvas.toDataURL('image/png'));
+    }
+
+    // 7. Nickname Skin Stealer
+    function fetchSkinByNick() {
+      const nick = document.getElementById('nickInput').value.trim();
+      if (!nick) return alert("Iltimos, nickname kiriting!");
+      
+      const imgUrl = `https://minotar.net/skin/${nick}`;
+      const img = new Image();
+      img.crossOrigin = "Anonymous";
+      img.onload = () => {
+        saveState();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        drawGrid();
+        update3D();
+      };
+      img.onerror = () => alert("O'yinchi skini topilmadi!");
+      img.src = imgUrl;
+    }
+
+    // 8. Preset Loader
+    function loadPreset(type) {
+      let url = "";
+      if (type === 'steve') url = "https://textures.minecraft.net/texture/1a414322e690456122b03f08960d40076a8f10d70233f20a1cf7178c7512d";
+      if (type === 'alex') url = "https://textures.minecraft.net/texture/6822421317ca9cb08a79858692c9e5ad329308465389f310b11e73799611f01";
+      if (type === 'zombie') url = "https://textures.minecraft.net/texture/563544d03e5c9b1395914a849764a8d0ed34e569c7f6d4d125439b1a51c91";
+      if (type === 'skeleton') url = "https://textures.minecraft.net/texture/31802d32a92613d3957f4955c32d4314c6e94326532832f053531b7952e";
+
+      const img = new Image();
+      img.crossOrigin = "Anonymous";
+      img.onload = () => {
+        saveState();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        drawGrid();
+        update3D();
+      };
+      img.src = url;
+    }
+
+    // 9. Auto-Shading & Transform
+    function applyShading() {
+      saveState();
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < imgData.data.length; i += 4) {
+        if (imgData.data[i + 3] > 0) {
+          const factor = 0.85 + Math.random() * 0.3;
+          imgData.data[i] = Math.min(255, imgData.data[i] * factor);
+          imgData.data[i + 1] = Math.min(255, imgData.data[i + 1] * factor);
+          imgData.data[i + 2] = Math.min(255, imgData.data[i + 2] * factor);
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+      drawGrid();
+    }
+
+    function flipHorizontal() {
+      saveState();
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = canvas.width; tempCanvas.height = canvas.height;
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.translate(canvas.width, 0);
+      tempCtx.scale(-1, 1);
+      tempCtx.drawImage(canvas, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(tempCanvas, 0, 0);
+      drawGrid();
+    }
+
+    // 10. Background, Layers & Animations
+    function setBg(color) {
+      document.getElementById('viewerContainer').style.backgroundColor = color;
+    }
+
+    function toggleLayers() {
+      const outer = document.getElementById('layerOuter').checked;
+      const inner = document.getElementById('layerInner').checked;
+      if (skinViewer && skinViewer.playerObject) {
+        skinViewer.playerObject.skin.outerLayer.visible = outer;
+        skinViewer.playerObject.skin.innerLayer.visible = inner;
+      }
+    }
+
+    function setAnim(type) {
+      if (!skinViewer) return;
+      if (type === 'walk') skinViewer.animation = new skinview3d.WalkingAnimation();
+      else if (type === 'run') skinViewer.animation = new skinview3d.RunningAnimation();
+      else skinViewer.animation = null;
+    }
+
+    // 11. Export & Screenshot
+    function exportPNG() {
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = 64; tempCanvas.height = 64;
+      tempCanvas.getContext('2d').drawImage(canvas, 0, 0, 64, 64);
+      const a = document.createElement('a');
+      a.download = 'minecraft-skin.png';
+      a.href = tempCanvas.toDataURL('image/png');
+      a.click();
+    }
+
+    function takeScreenshot() {
+      if (!skinViewer) return;
+      const img = skinViewer.render();
+      const a = document.createElement('a');
+      a.download = 'skin-3d-screenshot.png';
+      a.href = skinViewer.canvas.toDataURL('image/png');
+      a.click();
+    }
+  </script>
+</body>
+</html>
