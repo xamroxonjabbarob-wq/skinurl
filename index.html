@@ -1,888 +1,134 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SkinURL - Premium Minecraft Skin Host & 3D Viewer</title>
-  
-  <!-- External Libraries -->
-  <script src="https://bs-community.github.io/skinview3d/js/skinview3d.bundle.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <style>
-    :root {
-      --bg-dark: #080b12;
-      --card-bg: #121826;
-      --card-border: #232d42;
-      --primary: #ff7b00;
-      --primary-hover: #ffa200;
-      --primary-glow: rgba(255, 123, 0, 0.25);
-      --text-main: #f8fafc;
-      --text-sub: #94a3b8;
-      --success: #10b981;
-      --error: #ef4444;
-      --input-bg: #0b0f19;
+    /* Advanced UI Effects & Animations */
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.4); }
+      50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.8); }
+      100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.4); }
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    .drop-area.active {
+      animation: pulseGlow 1.5s infinite;
+      border-color: #60a5fa !important;
     }
 
-    body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-      position: relative;
-      overflow-x: hidden;
+    .skin-history-container {
+      margin-top: 2rem;
+      grid-column: 1 / -1;
     }
 
-    /* Floating Top Bar (Language Selector & Status) */
-    .top-bar {
-      position: absolute;
-      top: 15px;
-      right: 20px;
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      z-index: 100;
+    .history-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
     }
 
-    /* Language Selector Container */
-    .lang-selector-wrapper {
-      position: relative;
-    }
-
-    .lang-btn {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      color: var(--text-main);
-      padding: 8px 14px;
+    .history-card {
+      background: #1e293b;
+      border: 1px solid #334155;
       border-radius: 8px;
+      padding: 0.5rem;
+      text-align: center;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      transition: all 0.2s ease;
+      transition: transform 0.2s, border-color 0.2s;
     }
 
-    .lang-btn:hover {
-      border-color: var(--primary);
+    .history-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
     }
 
-    .lang-dropdown {
-      position: absolute;
-      top: 45px;
-      right: 0;
-      width: 280px;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-      display: none;
-      flex-direction: column;
+    .history-card canvas {
+      width: 100%;
+      height: 100px;
+      border-radius: 4px;
+    }
+
+    .history-card span {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: block;
+      margin-top: 0.5rem;
+      white-space: nowrap;
       overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toast-notification {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--success);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
       z-index: 1000;
     }
 
-    .lang-dropdown.active {
-      display: flex;
+    .toast-notification.show {
+      opacity: 1;
+      transform: translateY(0);
     }
-
-    .lang-search-box {
-      padding: 10px;
-      border-bottom: 1px solid var(--card-border);
-      background: var(--input-bg);
-    }
-
-    .lang-search-box input {
-      width: 100%;
-      padding: 8px 12px;
-      background: #182234;
-      border: 1px solid var(--card-border);
-      border-radius: 6px;
-      color: #fff;
-      font-size: 13px;
-      outline: none;
-    }
-
-    .lang-list {
-      max-height: 250px;
-      overflow-y: auto;
-      list-style: none;
-    }
-
-    .lang-item {
-      padding: 10px 14px;
-      font-size: 13px;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: background 0.15s ease;
-    }
-
-    .lang-item:hover {
-      background: #1c2638;
-      color: var(--primary);
-    }
-
-    .lang-item.selected {
-      background: rgba(255, 123, 0, 0.15);
-      color: var(--primary);
-      font-weight: bold;
-    }
-
-    /* Main Container */
-    .app-header {
-      text-align: center;
-      margin-top: 40px;
-      margin-bottom: 30px;
-    }
-
-    .app-title {
-      font-size: 32px;
-      font-weight: 800;
-      background: linear-gradient(135deg, #ff7b00, #ffb700);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: 1px;
-      margin-bottom: 6px;
-    }
-
-    .app-subtitle {
-      color: var(--text-sub);
-      font-size: 14px;
-    }
-
-    .main-grid {
-      width: 100%;
-      max-width: 960px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-    }
-
-    @media (max-width: 768px) {
-      .main-grid {
-        grid-template-columns: 1fr;
-      }
-      .top-bar {
-        position: relative;
-        top: 0;
-        right: 0;
-        margin-bottom: 10px;
-        justify-content: flex-end;
-        width: 100%;
-      }
-    }
-
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-      position: relative;
-    }
-
-    /* Upload Box (Hand drawn sketch replica) */
-    .sketch-upload-area {
-      border: 3px dashed var(--primary);
-      border-radius: 14px;
-      background: #0d1320;
-      padding: 40px 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 220px;
-      position: relative;
-    }
-
-    .sketch-upload-area:hover, .sketch-upload-area.dragover {
-      background: #141d30;
-      border-color: var(--primary-hover);
-      box-shadow: 0 0 20px var(--primary-glow);
-    }
-
-    .upload-main-text {
-      font-size: 28px;
-      font-weight: 800;
-      color: #ffffff;
-      text-transform: lowercase;
-      letter-spacing: 1px;
-    }
-
-    .upload-sub-text {
-      font-size: 12px;
-      color: var(--text-sub);
-      margin-top: 8px;
-    }
-
-    #file-input {
-      display: none;
-    }
-
-    /* Action Buttons */
-    .btn-action {
-      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-      color: #000;
-      border: none;
-      padding: 16px;
-      border-radius: 12px;
-      font-size: 22px;
-      font-weight: 800;
-      text-transform: lowercase;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 6px 20px var(--primary-glow);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .btn-action:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(255, 123, 0, 0.4);
-    }
-
-    .btn-action:disabled {
-      background: #283348;
-      color: #64748b;
-      cursor: not-allowed;
-      box-shadow: none;
-      transform: none;
-    }
-
-    /* URL Bar Group */
-    .url-group {
-      display: flex;
-      gap: 10px;
-    }
-
-    .url-input-wrapper {
-      flex: 1;
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-
-    .url-prefix {
-      position: absolute;
-      left: 12px;
-      color: var(--primary);
-      font-weight: bold;
-      font-size: 15px;
-    }
-
-    .url-input {
-      width: 100%;
-      background: var(--input-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 10px;
-      padding: 12px 12px 12px 48px;
-      color: var(--success);
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 13px;
-      outline: none;
-    }
-
-    .btn-copy {
-      background: var(--primary);
-      color: #000;
-      border: none;
-      padding: 0 20px;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 15px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .btn-copy:hover {
-      background: var(--primary-hover);
-    }
-
-    /* 3D Canvas Container */
-    .canvas-container {
-      width: 100%;
-      height: 280px;
-      background: radial-gradient(circle, #1a2336 0%, #0d1320 100%);
-      border-radius: 12px;
-      border: 1px solid var(--card-border);
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-    }
-
-    .controls-panel {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
-
-    .btn-ctrl {
-      background: #1a2336;
-      border: 1px solid var(--card-border);
-      color: var(--text-main);
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .btn-ctrl:hover, .btn-ctrl.active {
-      background: var(--primary);
-      color: #000;
-      border-color: var(--primary);
-    }
-
-    /* History & QR Section */
-    .bottom-section {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 24px;
-    }
-
-    @media (max-width: 768px) {
-      .bottom-section {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .history-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-height: 180px;
-      overflow-y: auto;
-    }
-
-    .history-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--input-bg);
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: 1px solid var(--card-border);
-      font-size: 13px;
-    }
-
-    .history-url {
-      color: var(--primary);
-      text-decoration: none;
-      font-family: monospace;
-      word-break: break-all;
-      max-width: 80%;
-    }
-
-    #qrcode-box {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #ffffff;
-      padding: 12px;
-      border-radius: 12px;
-      width: 130px;
-      height: 130px;
-      margin: 0 auto;
-    }
-
-    .status-badge {
-      font-size: 12px;
-      text-align: center;
-      color: var(--text-sub);
-    }
-  </style>
-</head>
-<body>
-
-  <!-- Floating Language Bar -->
-  <div class="top-bar">
-    <div class="lang-selector-wrapper">
-      <button class="lang-btn" id="lang-btn">
-        <i class="fa-solid fa-globe"></i>
-        <span id="current-lang-name">English</span>
-        <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
-      </button>
-
-      <div class="lang-dropdown" id="lang-dropdown">
-        <div class="lang-search-box">
-          <input type="text" id="lang-search" placeholder="Search language...">
-        </div>
-        <ul class="lang-list" id="lang-list">
-          <!-- Populated by JavaScript -->
-        </ul>
+    <!-- So'nggi Yuklangan Skinlar Tarixi -->
+    <div class="card skin-history-container">
+      <h2><i class="fa-solid fa-clock-rotate-left"></i> Oxirgi Yuklangan Skinlar</h2>
+      <div id="historyGrid" class="history-grid">
+        <!-- JavaScript orqali dinamik to'ldiriladi -->
       </div>
     </div>
   </div>
 
-  <header class="app-header">
-    <h1 class="app-title">SkinURL Generator</h1>
-    <p class="app-subtitle" id="txt-subtitle">Upload your Minecraft PNG skin and get a direct permanent URL</p>
-  </header>
-
-  <main class="main-grid">
-    
-    <!-- Left Column: Upload & URL -->
-    <div class="card">
-      <div class="sketch-upload-area" id="drop-area" onclick="document.getElementById('file-input').click()">
-        <div class="upload-main-text" id="txt-upload">upload</div>
-        <div class="upload-sub-text" id="txt-drop-hint">Click or drop .png skin file here</div>
-        <input type="file" id="file-input" accept="image/png">
-      </div>
-
-      <button class="btn-action" id="generate-btn">
-        <span id="txt-generate">generate</span>
-      </button>
-
-      <div class="url-group">
-        <div class="url-input-wrapper">
-          <span class="url-prefix">url:</span>
-          <input type="text" class="url-input" id="url-output" readonly placeholder="https://...">
-        </div>
-        <button class="btn-copy" id="copy-btn"><span id="txt-copy">copy</span></button>
-      </div>
-
-      <div class="status-badge" id="status-text">Ready for upload</div>
-    </div>
-
-    <!-- Right Column: 3D Model Controls -->
-    <div class="card" style="align-items: center; justify-content: center;">
-      <div class="canvas-container">
-        <canvas id="skin-canvas"></canvas>
-      </div>
-
-      <div class="controls-panel" style="width: 100%;">
-        <button class="btn-ctrl active" id="btn-walk"><i class="fa-solid fa-person-walking"></i> Walk</button>
-        <button class="btn-ctrl" id="btn-run"><i class="fa-solid fa-person-running"></i> Run</button>
-        <button class="btn-ctrl" id="btn-rotate"><i class="fa-solid fa-rotate"></i> Rotate</button>
-      </div>
-    </div>
-
-    <!-- Bottom Full Width: History & QR -->
-    <div class="bottom-section">
-      <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <h3 style="font-size: 15px;" id="txt-history-title"><i class="fa-solid fa-history"></i> Upload History</h3>
-          <button class="btn-ctrl" id="clear-history-btn" style="padding: 4px 10px; font-size: 11px;">Clear</button>
-        </div>
-        <ul class="history-list" id="history-list">
-          <!-- Dynamic history -->
-        </ul>
-      </div>
-
-      <div class="card" style="align-items: center; text-align: center;">
-        <h3 style="font-size: 14px; margin-bottom: 8px;" id="txt-qr-title">QR Code</h3>
-        <div id="qrcode-box">
-          <span style="font-size: 10px; color: #999;">Generates after upload</span>
-        </div>
-      </div>
-    </div>
-
-  </main>
-
-  <script>
-    // Comprehensive Language Database (All World Languages)
-    const languages = [
-      { code: 'en', name: 'English', native: 'English' },
-      { code: 'uz', name: 'Uzbek', native: "O'zbekcha" },
-      { code: 'ru', name: 'Russian', native: 'Русский' },
-      { code: 'es', name: 'Spanish', native: 'Español' },
-      { code: 'fr', name: 'French', native: 'Français' },
-      { code: 'de', name: 'German', native: 'Deutsch' },
-      { code: 'zh', name: 'Chinese', native: '中文' },
-      { code: 'ja', name: 'Japanese', native: '日本語' },
-      { code: 'ko', name: 'Korean', native: '한국어' },
-      { code: 'ar', name: 'Arabic', native: 'العربية' },
-      { code: 'tr', name: 'Turkish', native: 'Türkçe' },
-      { code: 'pt', name: 'Portuguese', native: 'Português' },
-      { code: 'it', name: 'Italian', native: 'Italiano' },
-      { code: 'hi', name: 'Hindi', native: 'हिन्दी' },
-      { code: 'bn', name: 'Bengali', native: 'বাংলা' },
-      { code: 'pa', name: 'Punjabi', native: 'ਪੰਜਾਬੀ' },
-      { code: 'jv', name: 'Javanese', native: 'Basa Jawa' },
-      { code: 'ms', name: 'Malay', native: 'Bahasa Melayu' },
-      { code: 'vi', name: 'Vietnamese', native: 'Tiếng Việt' },
-      { code: 'pl', name: 'Polish', native: 'Polski' },
-      { code: 'uk', name: 'Ukrainian', native: 'Українська' },
-      { code: 'fa', name: 'Persian', native: 'فارسی' },
-      { code: 'ro', name: 'Romanian', native: 'Română' },
-      { code: 'nl', name: 'Dutch', native: 'Nederlands' },
-      { code: 'el', name: 'Greek', native: 'Ελληνικά' },
-      { code: 'hu', name: 'Hungarian', native: 'Magyar' },
-      { code: 'sv', name: 'Swedish', native: 'Svenska' },
-      { code: 'cs', name: 'Czech', native: 'Čeština' },
-      { code: 'da', name: 'Danish', native: 'Dansk' },
-      { code: 'fi', name: 'Finnish', native: 'Suomi' },
-      { code: 'no', name: 'Norwegian', native: 'Norsk' },
-      { code: 'th', name: 'Thai', native: 'ไทย' },
-      { code: 'id', name: 'Indonesian', native: 'Bahasa Indonesia' },
-      { code: 'he', name: 'Hebrew', native: 'עברית' },
-      { code: 'kk', name: 'Kazakh', native: 'Қазақ тілі' },
-      { code: 'ky', name: 'Kyrgyz', native: 'Кыргызча' },
-      { code: 'tg', name: 'Tajik', native: 'Тоҷикӣ' },
-      { code: 'tk', name: 'Turkmen', native: 'Türkmen dili' },
-      { code: 'az', name: 'Azerbaijani', native: 'Azərbaycan dili' },
-      { code: 'hy', name: 'Armenian', native: 'Հայերեն' },
-      { code: 'ka', name: 'Georgian', native: 'ქართული' },
-      { code: 'sw', name: 'Swahili', native: 'Kiswahili' },
-      { code: 'af', name: 'Afrikaans', native: 'Afrikaans' },
-      { code: 'sq', name: 'Albanian', native: 'Shqip' },
-      { code: 'am', name: 'Amharic', native: 'አማርኛ' },
-      { code: 'eu', name: 'Basque', native: 'Euskara' },
-      { code: 'be', name: 'Belarusian', native: 'Беларуская' },
-      { code: 'bs', name: 'Bosnian', native: 'Bosanski' },
-      { code: 'bg', name: 'Bulgarian', native: 'Български' },
-      { code: 'ca', name: 'Catalan', native: 'Català' },
-      { code: 'hr', name: 'Croatian', native: 'Hrvatski' },
-      { code: 'et', name: 'Estonian', native: 'Eesti' },
-      { code: 'gl', name: 'Galician', native: 'Galego' },
-      { code: 'is', name: 'Icelandic', native: 'Íslenska' },
-      { code: 'ga', name: 'Irish', native: 'Gaeilge' },
-      { code: 'lv', name: 'Latvian', native: 'Latviešu' },
-      { code: 'lt', name: 'Lithuanian', native: 'Lietuvių' },
-      { code: 'mk', name: 'Macedonian', native: 'Македонски' },
-      { code: 'mt', name: 'Maltese', native: 'Malti' },
-      { code: 'mn', name: 'Mongolian', native: 'Монгол' },
-      { code: 'ne', name: 'Nepali', native: 'नेपाली' },
-      { code: 'sk', name: 'Slovak', native: 'Slovenčina' },
-      { code: 'sl', name: 'Slovenian', native: 'Slovenščina' },
-      { code: 'ur', name: 'Urdu', native: 'اردو' }
-    ];
-
-    // UI Translations Dictionary
-    const translations = {
-      en: {
-        subtitle: "Upload your Minecraft PNG skin and get a direct permanent URL",
-        upload: "upload",
-        dropHint: "Click or drop .png skin file here",
-        generate: "generate",
-        copy: "copy",
-        copied: "copied!",
-        history: "Upload History",
-        qr: "QR Code",
-        ready: "Ready for upload",
-        uploading: "Uploading...",
-        success: "Direct PNG URL Generated!",
-        error: "Upload failed! Trying backup...",
-        invalid: "Please upload a valid Minecraft .png skin!"
-      },
-      uz: {
-        subtitle: "Minecraft PNG skinini yuklang va to'g'ridan-to'g'ri doimiy havola oling",
-        upload: "fayl yuklash",
-        dropHint: "Skin faylini bosing yoki shu yerga tashlang",
-        generate: "yaratish",
-        copy: "nusxa",
-        copied: "nusxalandi!",
-        history: "Yuklashlar Tarixi",
-        qr: "QR Kod",
-        ready: "Yuklashga tayyor",
-        uploading: "Yuklanmoqda...",
-        success: "To'g'ridan-to'g'ri URL yaratildi!",
-        error: "Yuklashda xatolik! Zaxira xizmat ishlatilmoqda...",
-        invalid: "Iltimos, to'g'ri Minecraft PNG skin faylini tanlang!"
-      },
-      ru: {
-        subtitle: "Загрузите PNG скин Minecraft и получите прямую постоянную ссылку",
-        upload: "загрузить",
-        dropHint: "Нажмите или перетащите файл скина сюда",
-        generate: "создать",
-        copy: "копия",
-        copied: "скопировано!",
-        history: "История Загрузок",
-        qr: "QR Код",
-        ready: "Готов к загрузке",
-        uploading: "Загрузка...",
-        success: "Прямая ссылка создана!",
-        error: "Ошибка загрузки! Пробуем резервный сервер...",
-        invalid: "Пожалуйста, выберите корректный PNG скин Minecraft!"
-      }
-    };
-
-    let currentLang = 'en';
-
-    // UI Elements
-    const langBtn = document.getElementById('lang-btn');
-    const langDropdown = document.getElementById('lang-dropdown');
-    const langList = document.getElementById('lang-list');
-    const langSearch = document.getElementById('lang-search');
-    const currentLangName = document.getElementById('current-lang-name');
-
-    const fileInput = document.getElementById('file-input');
-    const dropArea = document.getElementById('drop-area');
-    const generateBtn = document.getElementById('generate-btn');
-    const urlOutput = document.getElementById('url-output');
-    const copyBtn = document.getElementById('copy-btn');
-    const statusText = document.getElementById('status-text');
-    const historyList = document.getElementById('history-list');
-    const qrcodeBox = document.getElementById('qrcode-box');
-
-    let selectedFile = null;
-    let skinViewer = null;
-    let autoRotate = false;
-
-    // --- Language Selector Logic ---
-    function renderLanguageList(filter = '') {
-      langList.innerHTML = '';
-      languages
-        .filter(l => l.name.toLowerCase().includes(filter.toLowerCase()) || l.native.toLowerCase().includes(filter.toLowerCase()))
-        .forEach(lang => {
-          const li = document.createElement('li');
-          li.className = `lang-item ${lang.code === currentLang ? 'selected' : ''}`;
-          li.innerHTML = `<span>${lang.name}</span> <span style="font-size:11px; color:#64748b;">${lang.native}</span>`;
-          li.addEventListener('click', () => setLanguage(lang.code));
-          langList.appendChild(li);
-        });
-    }
-
-    function setLanguage(code) {
-      currentLang = code;
-      const langObj = languages.find(l => l.code === code);
-      currentLangName.innerText = langObj ? langObj.name : 'English';
-      langDropdown.classList.remove('active');
-
-      const dict = translations[code] || translations['en'];
-      
-      document.getElementById('txt-subtitle').innerText = dict.subtitle;
-      document.getElementById('txt-upload').innerText = dict.upload;
-      document.getElementById('txt-drop-hint').innerText = dict.dropHint;
-      document.getElementById('txt-generate').innerText = dict.generate;
-      document.getElementById('txt-copy').innerText = dict.copy;
-      document.getElementById('txt-history-title').innerText = dict.history;
-      document.getElementById('txt-qr-title').innerText = dict.qr;
-      statusText.innerText = dict.ready;
-
-      renderLanguageList();
-    }
-
-    langBtn.addEventListener('click', () => langDropdown.classList.toggle('active'));
-    langSearch.addEventListener('input', (e) => renderLanguageList(e.target.value));
-
-    document.addEventListener('click', (e) => {
-      if (!langBtn.contains(e.target) && !langDropdown.contains(e.target)) {
-        langDropdown.classList.remove('active');
-      }
-    });
-
-    renderLanguageList();
-
-    // --- 3D Skin Viewer Integration ---
-    function initSkinViewer(src) {
-      if (!skinViewer) {
-        skinViewer = new skinview3d.SkinViewer({
-          canvas: document.getElementById("skin-canvas"),
-          width: 220,
-          height: 250,
-          skin: src
-        });
-        skinViewer.animation = new skinview3d.WalkingAnimation();
-        skinViewer.animation.speed = 0.5;
-      } else {
-        skinViewer.loadSkin(src);
-      }
-    }
-
-    // Default Steve
-    initSkinViewer("https://bs-community.github.io/skinview3d/img/steve.png");
-
-    // Controls
-    document.getElementById('btn-walk').addEventListener('click', (e) => {
-      setActiveControl(e.target);
-      skinViewer.animation = new skinview3d.WalkingAnimation();
-      skinViewer.animation.speed = 0.5;
-    });
-
-    document.getElementById('btn-run').addEventListener('click', (e) => {
-      setActiveControl(e.target);
-      skinViewer.animation = new skinview3d.RunningAnimation();
-      skinViewer.animation.speed = 0.7; // Me'yoriy yugurish tezligi
-    });
-
-    document.getElementById('btn-rotate').addEventListener('click', (e) => {
-      autoRotate = !autoRotate;
-      skinViewer.autoRotate = autoRotate;
-      e.target.classList.toggle('active', autoRotate);
-    });
-
-    function setActiveControl(el) {
-      document.querySelectorAll('.controls-panel .btn-ctrl').forEach(b => {
-        if (b.id !== 'btn-rotate') b.classList.remove('active');
-      });
-      el.classList.add('active');
-    }
-
-    // --- File Handling & Validation ---
-    fileInput.addEventListener('change', (e) => {
-      if (e.target.files.length > 0) processSelectedFile(e.target.files[0]);
-    });
-
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-      dropArea.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); });
-    });
-
-    dropArea.addEventListener('dragover', () => dropArea.classList.add('dragover'));
-    dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
-    dropArea.addEventListener('drop', (e) => {
-      dropArea.classList.remove('dragover');
-      if (e.dataTransfer.files.length > 0) processSelectedFile(e.dataTransfer.files[0]);
-    });
-
-    function processSelectedFile(file) {
-      if (!file.type.includes('image/png')) {
-        const dict = translations[currentLang] || translations['en'];
-        alert(dict.invalid);
-        return;
-      }
-
-      selectedFile = file;
-      document.getElementById('txt-upload').innerText = file.name;
-      document.getElementById('txt-drop-hint').innerText = `${(file.size / 1024).toFixed(1)} KB`;
-
-      const reader = new FileReader();
-      reader.onload = (e) => initSkinViewer(e.target.result);
-      reader.readAsDataURL(file);
-    }
-
-    // --- Upload System ---
-    generateBtn.addEventListener('click', async () => {
-      if (!selectedFile) {
-        alert("Please select a .png skin file first!");
-        return;
-      }
-
-      const dict = translations[currentLang] || translations['en'];
-      generateBtn.disabled = true;
-      statusText.innerText = dict.uploading;
-      statusText.style.color = "var(--primary)";
-
-      // Attempt Host 1: Catbox
-      let directUrl = await uploadToCatbox(selectedFile);
-
-      // Attempt Host 2 (Fallback): File.io
-      if (!directUrl) {
-        statusText.innerText = dict.error;
-        directUrl = await uploadToFileIo(selectedFile);
-      }
-
-      if (directUrl) {
-        urlOutput.value = directUrl;
-        statusText.innerText = dict.success;
-        statusText.style.color = "var(--success)";
-
-        qrcodeBox.innerHTML = "";
-        new QRCode(qrcodeBox, { text: directUrl, width: 110, height: 110 });
-
-        saveHistory(selectedFile.name, directUrl);
-      } else {
-        statusText.innerText = "All upload servers failed. Check connection.";
-        statusText.style.color = "var(--error)";
-      }
-
-      generateBtn.disabled = false;
-    });
-
-    async function uploadToCatbox(file) {
-      try {
-        const formData = new FormData();
-        formData.append('reqtype', 'fileupload');
-        formData.append('fileToUpload', file);
-
-        const res = await fetch('https://catbox.moe/user/api.php', { method: 'POST', body: formData });
-        if (res.ok) {
-          const text = await res.text();
-          return text.trim();
-        }
-      } catch (err) {
-        console.warn("Catbox upload failed, attempting fallback...", err);
-      }
-      return null;
-    }
-
-    async function uploadToFileIo(file) {
-      try {
-        const formData = new FormData();
-        formData.append('file', file);
-
-        const res = await fetch('https://file.io', { method: 'POST', body: formData });
-        const data = await res.json();
-        if (data.success) {
-          return data.link;
-        }
-      } catch (err) {
-        console.error("Fallback upload failed...", err);
-      }
-      return null;
-    }
-
-    copyBtn.addEventListener('click', () => {
-      if (urlOutput.value) {
-        navigator.clipboard.writeText(urlOutput.value);
-        const dict = translations[currentLang] || translations['en'];
-        copyBtn.innerText = dict.copied;
-        setTimeout(() => copyBtn.innerText = dict.copy, 2000);
-      }
-    });
-
-    function saveHistory(fileName, url) {
-      let history = JSON.parse(localStorage.getItem('skin_history_v2') || '[]');
-      history.unshift({ name: fileName, url: url, time: new Date().toLocaleTimeString() });
-      if (history.length > 10) history.pop();
-      localStorage.setItem('skin_history_v2', JSON.stringify(history));
+  <!-- Bildirishnoma Oynasi (Toast) -->
+  <div id="toast" class="toast-notification">Nusxalandi!</div>
+    // LocalStorage orqali Skinlar Tarixini Boshqarish
+    function saveToHistory(skinDataUrl, name) {
+      let history = JSON.parse(localStorage.getItem('skin_history') || '[]');
+      history.unshift({ url: skinDataUrl, name: name || 'Skin #' + (history.length + 1), date: new Date().toLocaleTimeString() });
+      if (history.length > 6) history.pop(); // Maksimal 6 ta saqlash
+      localStorage.setItem('skin_history', JSON.stringify(history));
       renderHistory();
     }
 
     function renderHistory() {
-      let history = JSON.parse(localStorage.getItem('skin_history_v2') || '[]');
-      historyList.innerHTML = '';
+      const historyGrid = document.getElementById('historyGrid');
+      if (!historyGrid) return;
+      
+      let history = JSON.parse(localStorage.getItem('skin_history') || '[]');
+      historyGrid.innerHTML = '';
+
       if (history.length === 0) {
-        historyList.innerHTML = `<li style="color:var(--text-sub); font-size:12px;">No uploads yet.</li>`;
+        historyGrid.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">Hali skinlar yuklanmadi.</p>';
         return;
       }
-      history.forEach(item => {
-        const li = document.createElement('li');
-        li.className = 'history-item';
-        li.innerHTML = `
-          <a href="${item.url}" target="_blank" class="history-url">${item.url}</a>
-          <button class="btn-ctrl" style="padding: 4px 8px; font-size: 11px;" onclick="navigator.clipboard.writeText('${item.url}')">Copy</button>
+
+      history.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'history-card';
+        card.innerHTML = `
+          <div style="background: #0f172a; height: 80px; border-radius: 4px; display:flex; align-items:center; justify-center;">🎮</div>
+          <span>${item.name}</span>
         `;
-        historyList.appendChild(li);
+        card.onclick = () => {
+          viewer.loadSkin(item.url);
+          showToast("Skin 3D oynaga yuklandi!");
+        };
+        historyGrid.appendChild(card);
       });
     }
 
-    document.getElementById('clear-history-btn').addEventListener('click', () => {
-      localStorage.removeItem('skin_history_v2');
-      renderHistory();
-    });
+    // Chiroyli Bildirishnoma Ko'rsatish
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.innerText = message;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    }
 
-    renderHistory();
-  </script>
-</body>
-</html>
+    // Sahifa yuklanganda tarixni chiqarish
+    window.addEventListener('load', renderHistory);
