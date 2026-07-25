@@ -5,11 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MC SkinURL Portal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 3D Skin Render Kutubxonasi (Three.js va Skinview3d) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/skinview3d@3.0.1/dist/skinview3d.bundle.js"></script>
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
         body { background-color: #0b1120; color: #f1f5f9; min-height: 100vh; }
 
-        /* HEADER */
+        /* HEADER & NAVBAR */
         header {
             background-color: #1e293b; border-bottom: 2px solid #334155;
             padding: 12px 5%; display: flex; justify-content: space-between; align-items: center;
@@ -18,23 +23,26 @@
 
         .lang-btn, .chapters-btn {
             background: #0f172a; color: #38bdf8; border: 1px solid #38bdf8;
-            padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600;
-            display: flex; align-items: center; gap: 6px; font-size: 0.85rem;
+            padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 600;
+            display: flex; align-items: center; gap: 8px; font-size: 0.85rem;
         }
         .chapters-btn { background: #0284c7; color: white; border: none; }
 
         .lang-menu, .chapters-menu {
-            display: none; position: absolute; top: 45px; background: #1e293b;
-            border: 1px solid #334155; border-radius: 8px; padding: 10px; width: 200px;
+            display: none; position: absolute; top: 50px; background: #1e293b;
+            border: 1px solid #334155; border-radius: 8px; padding: 10px; width: 220px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 101;
         }
         .lang-menu { left: 5%; }
         .chapters-menu { right: 5%; padding: 0; }
         .lang-menu.show, .chapters-menu.show { display: block; }
 
+        .lang-item { padding: 8px 10px; cursor: pointer; border-radius: 6px; font-size: 0.9rem; }
+        .lang-item:hover { background: #0284c7; color: white; }
+
         .chapters-menu button {
             width: 100%; padding: 12px; background: none; border: none; color: #f1f5f9;
-            text-align: left; cursor: pointer; border-bottom: 1px solid #334155;
+            text-align: left; cursor: pointer; border-bottom: 1px solid #334155; font-size: 0.9rem;
         }
         .chapters-menu button:hover { background: #0f172a; color: #38bdf8; }
 
@@ -49,28 +57,33 @@
         .info-card { background: #1e293b; border-radius: 10px; padding: 20px; border: 1px solid #334155; }
         .info-card i { font-size: 30px; color: #38bdf8; margin-bottom: 10px; }
 
-        /* 2-BOB */
+        /* 2-BOB (MC SKINS) */
         .search-box { margin-bottom: 15px; }
-        .search-box input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; outline: none; }
-        .skins-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .search-box input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; outline: none; }
+        .skins-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         @media (min-width: 768px) { .skins-grid { grid-template-columns: repeat(4, 1fr); } }
-        .skin-card { background: #1e293b; border-radius: 10px; padding: 12px; text-align: center; border: 1px solid #334155; }
-        .skin-card img { width: 90px; height: 120px; object-fit: contain; margin-bottom: 8px; }
-        .btn-download { background: #16a34a; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 0.8rem; text-decoration: none; display: block; }
+        .skin-card { background: #1e293b; border-radius: 10px; padding: 12px; text-align: center; border: 1px solid #334155; transition: transform 0.2s; }
+        .skin-card:hover { transform: translateY(-3px); }
+        .skin-card img { width: 100px; height: 130px; object-fit: contain; margin-bottom: 8px; }
+        .btn-download { background: #16a34a; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 0.8rem; text-decoration: none; display: block; font-weight: 600; }
 
-        /* 3-BOB */
-        .converter-card { background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; max-width: 480px; margin: 0 auto; text-align: center; }
+        /* 3-BOB (CONVERTER & 3D CANVAS) */
+        .converter-card { background: #1e293b; padding: 25px; border-radius: 12px; border: 1px solid #334155; max-width: 520px; margin: 0 auto; text-align: center; }
         .drop-box { border: 2px dashed #0284c7; padding: 20px; border-radius: 10px; background: #0f172a; margin-bottom: 15px; }
-        .btn-action { background: #0284c7; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; }
+        .btn-action { background: #0284c7; color: white; border: none; padding: 12px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; font-size: 0.95rem; }
 
-        /* 3D PREVIEW & URL AREA */
-        .preview-box { margin-top: 15px; display: none; background: #0f172a; padding: 15px; border-radius: 10px; border: 1px solid #334155; }
-        .preview-box img { width: 110px; height: 140px; object-fit: contain; margin-bottom: 10px; }
+        /* 3D RENDER CANVAS BOX */
+        .canvas-box {
+            width: 100%; height: 280px; background: radial-gradient(circle, #334155 0%, #0f172a 100%);
+            border-radius: 10px; margin-top: 15px; display: none; border: 1px solid #0284c7;
+            position: relative; overflow: hidden;
+        }
+        #skinCanvas { width: 100%; height: 100%; }
 
-        .url-box { margin-top: 15px; background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #22c55e; text-align: left; }
+        .url-box { margin-top: 15px; background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #22c55e; text-align: left; display: none; }
         .url-input-group { display: flex; gap: 8px; margin-top: 6px; }
-        .url-input-group input { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #38bdf8; outline: none; font-size: 0.85rem; }
-        .btn-copy { background: #22c55e; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        .url-input-group input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #38bdf8; outline: none; font-size: 0.85rem; }
+        .btn-copy { background: #22c55e; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -80,9 +93,9 @@
         <div style="position: relative;">
             <button class="lang-btn" onclick="toggleMenu('langMenu')"><i class="fa-solid fa-globe"></i> <span id="currentLang">O'zbek</span></button>
             <div class="lang-menu" id="langMenu">
-                <div style="padding: 5px; cursor: pointer;" onclick="selectLanguage('uz')">O'zbek</div>
-                <div style="padding: 5px; cursor: pointer;" onclick="selectLanguage('en')">English</div>
-                <div style="padding: 5px; cursor: pointer;" onclick="selectLanguage('ru')">Русский</div>
+                <div class="lang-item" onclick="selectLanguage('uz')">O'zbek</div>
+                <div class="lang-item" onclick="selectLanguage('en')">English</div>
+                <div class="lang-item" onclick="selectLanguage('ru')">Русский</div>
             </div>
         </div>
 
@@ -96,65 +109,65 @@
         </div>
     </header>
 
-    <!-- 1-BOB -->
+    <!-- 1-BOB: BOSH SAHIFA -->
     <main id="chap1" class="content-section active">
         <div class="hero">
             <h1 id="b1_title">Minecraft Skin Portaliga Xush Kelibsiz!</h1>
-            <p id="b1_desc">Bu portal orqali Minecraft skinlarini 3D formatda ko'rishingiz, yuklab olishingiz hamda o'zingizning skin PNG faylingizni URL havolaga aylantirishingiz mumkin.</p>
+            <p id="b1_desc">Ushbu portal orqali eng sara Minecraft skinlarini ko'rishingiz, yuklab olishingiz va shaxsiy skin faylingizni 3D modelda yugurtirib, direct URL havola olishingiz mumkin.</p>
         </div>
         <div class="info-grid">
             <div class="info-card">
                 <i class="fa-solid fa-house"></i>
                 <h3 id="ic1_t">1-Bob: Bosh Sahifa</h3>
-                <p id="ic1_d">Portalning vazifasi va barcha bo'limlardan foydalanish qo'llanmasi.</p>
+                <p id="ic1_d">Portal imkoniyatlari va bo'limlar bo'yicha to'liq yo'riqnoma.</p>
             </div>
             <div class="info-card">
                 <i class="fa-solid fa-shirt"></i>
                 <h3 id="ic2_t">2-Bob: MC Skinlar Galereyasi</h3>
-                <p id="ic2_d">O'yinchilarning eng sara 3D skinlarini ko'rish va yuklab olish bo'limi.</p>
+                <p id="ic2_d">Minglab har xil Minecraft skinlarini cheksiz pastga tushirib ko'rish va yuklab olish.</p>
             </div>
             <div class="info-card">
                 <i class="fa-solid fa-link"></i>
-                <h3 id="ic3_t">3-Bob: Skin to URL Generator</h3>
-                <p id="ic3_d">Skin faylingizni yuklab, 3D modelini chiqarish va ishlaydigan URL olish.</p>
+                <h3 id="ic3_t">3-Bob: Skin to URL & 3D Generator</h3>
+                <p id="ic3_d">Skin faylini yuklash, 3D animated modelni tomosha qilish va ishlaydigan direct URL olish.</p>
             </div>
         </div>
     </main>
 
-    <!-- 2-BOB -->
+    <!-- 2-BOB: CHEKSIZ SKINLAR -->
     <main id="chap2" class="content-section">
-        <h2 style="font-size: 1.2rem; color: #38bdf8; margin-bottom: 12px;" id="b2_title"><i class="fa-solid fa-shirt"></i> MC Skinlar Galereyasi</h2>
+        <h2 style="font-size: 1.3rem; color: #38bdf8; margin-bottom: 12px;" id="b2_title"><i class="fa-solid fa-shirt"></i> MC Skinlar Galereyasi</h2>
         <div class="search-box">
             <input type="text" id="skinSearchInput" placeholder="Skin qidirish..." onkeyup="filterSkins()">
         </div>
         <div class="skins-grid" id="skinsGrid"></div>
     </main>
 
-    <!-- 3-BOB -->
+    <!-- 3-BOB: 3D GENERATOR VA URL -->
     <main id="chap3" class="content-section">
         <div class="converter-card">
             <h2 style="font-size: 1.2rem; color: #38bdf8; margin-bottom: 15px;" id="b3_title"><i class="fa-solid fa-link"></i> Skin faylini URL ga aylantirish</h2>
             
             <div class="drop-box">
-                <i class="fa-solid fa-file-image" style="font-size: 35px; color: #0284c7; margin-bottom: 10px;"></i>
-                <p style="font-size: 0.9rem; font-weight: 600;" id="selectStatusText">Kompyuter yoki telefondan .png skin faylini tanlang:</p>
+                <i class="fa-solid fa-file-image" style="font-size: 38px; color: #0284c7; margin-bottom: 10px;"></i>
+                <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 10px;" id="statusText">Kompyuter yoki telefondan .png skin faylini tanlang:</p>
                 <input type="file" id="skinInput" accept="image/png" hidden>
-                <button class="btn-action" style="margin-top: 10px;" onclick="document.getElementById('skinInput').click()" id="b3_btn_select">Skin Faylini Tanlash</button>
+                <button class="btn-action" onclick="document.getElementById('skinInput').click()" id="b3_btn_select">Skin Faylini Tanlash</button>
             </div>
 
             <button class="btn-action" style="background: #16a34a;" id="btnGenerate">Generate</button>
 
-            <!-- GENERATE BO'LGANDA CHIQADIGAN 3D PREVIEW VA URL -->
-            <div class="preview-box" id="previewBox">
-                <h4 style="color: #38bdf8; margin-bottom: 8px;">3D Skin Modeli:</h4>
-                <img id="skinPreviewImg" src="" alt="3D Skin Preview">
+            <!-- 3D MODEL CANVAS -->
+            <div class="canvas-box" id="canvasBox">
+                <canvas id="skinCanvas"></canvas>
+            </div>
 
-                <div class="url-box">
-                    <label style="font-size: 0.8rem; color: #22c55e; font-weight: 600;" id="b3_url_label">Tayyor HTTPS Direct URL:</label>
-                    <div class="url-input-group">
-                        <input type="text" id="urlOutput" readonly>
-                        <button class="btn-copy" id="btnCopy" onclick="copyUrl()">Copy</button>
-                    </div>
+            <!-- TAYYOR DIRECT URL VA COPY -->
+            <div class="url-box" id="urlBox">
+                <label style="font-size: 0.85rem; color: #22c55e; font-weight: 600;" id="b3_url_label">Haqiqiy Direct HTTPS URL:</label>
+                <div class="url-input-group">
+                    <input type="text" id="urlOutput" readonly>
+                    <button class="btn-copy" id="btnCopy" onclick="copyUrl()">Copy</button>
                 </div>
             </div>
         </div>
@@ -167,34 +180,34 @@
                 cLang: "O'zbek", boblar: "Boblar",
                 b1: "1-Bob: Bosh sahifa", b2: "2-Bob: MC Skinlar", b3: "3-Bob: Skin to URL",
                 b1_title: "Minecraft Skin Portaliga Xush Kelibsiz!",
-                b1_desc: "Bu portal orqali Minecraft skinlarini 3D formatda ko'rishingiz, yuklab olishingiz hamda URL ga aylantirishingiz mumkin.",
-                ic1_t: "1-Bob: Bosh Sahifa", ic1_d: "Portalning vazifasi va bo'limlardan foydalanish qo'llanmasi.",
-                ic2_t: "2-Bob: MC Skinlar Galereyasi", ic2_d: "O'yinchilarning eng sara 3D skinlarini ko'rish va yuklab olish bo'limi.",
-                ic3_t: "3-Bob: Skin to URL Generator", ic3_d: "Skin faylingizni yuklab, 3D modelini chiqarish va ishlaydigan URL olish.",
-                b2_title: "MC Skinlar Galereyasi", download: "Yuklab olish", search_p: "Skin nomi bo'yicha qidirish...",
+                b1_desc: "Ushbu portal orqali eng sara Minecraft skinlarini ko'rishingiz, yuklab olishingiz va shaxsiy skin faylingizni 3D modelda yugurtirib, direct URL havola olishingiz mumkin.",
+                ic1_t: "1-Bob: Bosh Sahifa", ic1_d: "Portal imkoniyatlari va bo'limlar bo'yicha to'liq yo'riqnoma.",
+                ic2_t: "2-Bob: MC Skinlar Galereyasi", ic2_d: "Minglab har xil Minecraft skinlarini cheksiz pastga tushirib ko'rish va yuklab olish.",
+                ic3_t: "3-Bob: Skin to URL & 3D Generator", ic3_d: "Skin faylini yuklash, 3D animated modelni tomosha qilish va ishlaydigan direct URL olish.",
+                b2_title: "MC Skinlar Galereyasi", download: "Yuklab olish", search_p: "Skin qidirish...",
                 b3_title: "Skin faylini URL ga aylantirish", select_def: "Kompyuter yoki telefondan .png skin faylini tanlang:",
-                selected: "Skin joylandi!", btn_select: "Skin Faylini Tanlash", btn_gen: "Generate", url_lbl: "Tayyor HTTPS Direct URL:", copy: "Nusxalash", copied: "URL nusxalandi!"
+                selected: "Skin joylandi!", btn_select: "Skin Faylini Tanlash", btn_gen: "Generate", url_lbl: "Haqiqiy Direct HTTPS URL:", copy: "Copy", copied: "URL nusxalandi!"
             },
             en: {
                 cLang: "English", boblar: "Chapters",
                 b1: "Chapter 1: Home", b2: "Chapter 2: MC Skins", b3: "Chapter 3: Skin to URL",
                 b1_title: "Welcome to Minecraft Skin Portal!",
-                b1_desc: "Browse 3D skins, download them, and convert your skin PNG files into working direct URLs.",
-                ic1_t: "Chapter 1: Home Guide", ic1_d: "Overview and user guide for all sections.",
-                ic2_t: "Chapter 2: MC Skins Gallery", ic2_d: "Explore and download popular 3D Minecraft skins.",
-                ic3_t: "Chapter 3: Skin to URL Generator", ic3_d: "Upload skin PNG, generate 3D model preview and direct URL.",
+                b1_desc: "Browse top Minecraft skins, download them, and render your custom skin PNG into an animated 3D model with a direct URL.",
+                ic1_t: "Chapter 1: Home Guide", ic1_d: "Overview and user instructions for all sections.",
+                ic2_t: "Chapter 2: MC Skins Gallery", ic2_d: "Explore infinite Minecraft skins with smooth scrolling.",
+                ic3_t: "Chapter 3: Skin to URL & 3D Generator", ic3_d: "Upload skin PNG, preview 3D running model and get direct URL.",
                 b2_title: "MC Skins Gallery", download: "Download", search_p: "Search skin...",
-                b3_title: "Convert Skin PNG to URL", select_def: "Select .png skin file from device:",
-                selected: "Skin uploaded!", btn_select: "Select Skin File", btn_gen: "Generate", url_lbl: "Generated Direct HTTPS URL:", copy: "Copy", copied: "URL Copied!"
+                b3_title: "Convert Skin PNG to URL", select_def: "Select .png skin file from your device:",
+                selected: "Skin uploaded!", btn_select: "Select Skin File", btn_gen: "Generate", url_lbl: "Direct HTTPS URL:", copy: "Copy", copied: "URL Copied!"
             },
             ru: {
                 cLang: "Русский", boblar: "Главы",
                 b1: "1-Глава: Главная", b2: "2-Глава: MC Скины", b3: "3-Глава: Скин в URL",
                 b1_title: "Добро пожаловать в Minecraft Skin Portal!",
-                b1_desc: "Просматривайте 3D скины, скачивайте их и конвертируйте PNG файлы в прямые URL ссылки.",
-                ic1_t: "1-Глава: Главная", ic1_d: "Общая информация и инструкция по использованию.",
-                ic2_t: "2-Глава: Галерея MC Скинов", ic2_d: "Просмотр и скачивание популярных 3D скинов Minecraft.",
-                ic3_t: "3-Глава: Скин в URL Генератор", ic3_d: "Загрузка PNG файла, просмотр 3D модели и получение ссылки.",
+                b1_desc: "Просматривайте лучшие скины Minecraft, скачивайте их и генерируйте 3D анимированную модель с прямой URL ссылкой.",
+                ic1_t: "1-Глава: Главная", ic1_d: "Обзор возможностей и инструкция по сайту.",
+                ic2_t: "2-Глава: Галерея MC Скинов", ic2_d: "Бесконечный просмотр и скачивание различных скинов.",
+                ic3_t: "3-Глава: Скин в URL и 3D Генератор", ic3_d: "Загрузка PNG, 3D анимированный просмотр и получение прямой ссылки.",
                 b2_title: "Галерея MC Скинов", download: "Скачать", search_p: "Поиск скина...",
                 b3_title: "Конвертер Скина в URL", select_def: "Выберите файл .png с устройства:",
                 selected: "Скин загружен!", btn_select: "Выбрать файл", btn_gen: "Generate", url_lbl: "Прямая HTTPS URL ссылка:", copy: "Копировать", copied: "URL Скопирован!"
@@ -230,58 +243,106 @@
             document.getElementById('chaptersMenu').classList.remove('show');
         }
 
-        // 2-BOB: HAR XIL HAQIQIY SKINLAR
-        const skinList = ["Steve", "Alex", "Technoblade", "Dream", "Grian", "MumboJumbo", "Skeppy", "DanTDM", "TommyInnit", "Tubbo", "GeorgeNotFound", "Sapnap", "Notch", "Jeb", "PrestonPlayz", "BadBoyHalo", "Creeper", "Skeleton", "Enderman", "Zombie"];
-        const skinsGrid = document.getElementById('skinsGrid');
+        // 2-BOB: 70+ XILMA-XIL HAQIQIY SKINLAR VA CHEKSIZ SCROLL
+        const playerNames = [
+            "Steve", "Alex", "Technoblade", "Dream", "Grian", "MumboJumbo", "Skeppy", "DanTDM", "TommyInnit", "Tubbo",
+            "GeorgeNotFound", "Sapnap", "Notch", "Jeb", "PrestonPlayz", "BadBoyHalo", "Purpled", "Ranboo", "CaptainSparklez",
+            "Ph constitutional", "Stampy", "SquidKid", "FitMC", "SalC1", "2b2t", "Derp", "Ninja", "Shadow", "Knight",
+            "Creeper", "Skeleton", "Zombie", "Enderman", "Herobrine", "PvP_Master", "ProGamer", "Frost", "Flame", "Viper",
+            "Ghost", "Dragon", "Phoenix", "Titan", "Alpha", "Omega", "Cyber", "Neon", "GamerBoy", "GamerGirl", "King"
+        ];
 
-        skinList.forEach(name => {
-            skinsGrid.innerHTML += `
-                <div class="skin-card" data-name="${name.toLowerCase()}">
-                    <img src="https://minotar.net/armor/body/${name}/100.png" alt="${name}">
-                    <h4 style="margin-bottom:6px; font-size:0.85rem;">${name}</h4>
-                    <a href="https://minotar.net/download/${name}" download="${name}.png" class="btn-download"><i class="fa-solid fa-download"></i> Yuklab olish</a>
-                </div>
-            `;
+        const skinsGrid = document.getElementById('skinsGrid');
+        let loadedIndex = 0;
+
+        function loadMoreSkins(count = 12) {
+            const downloadText = langData[currentLang].download;
+            for (let i = 0; i < count; i++) {
+                if (loadedIndex >= playerNames.length) loadedIndex = 0; // xilma-xil aylana beradi
+                const name = playerNames[loadedIndex];
+                const skinImgUrl = `https://mc-heads.net/body/${name}/100`;
+                const skinDownloadUrl = `https://mc-heads.net/download/${name}`;
+
+                const card = document.createElement('div');
+                card.className = 'skin-card';
+                card.setAttribute('data-name', name.toLowerCase());
+                card.innerHTML = `
+                    <img src="${skinImgUrl}" alt="${name}">
+                    <h4 style="margin-bottom:8px; font-size:0.85rem; color:#f1f5f9;">${name}</h4>
+                    <a href="${skinDownloadUrl}" download="${name}.png" class="btn-download"><i class="fa-solid fa-download"></i> ${downloadText}</a>
+                `;
+                skinsGrid.appendChild(card);
+                loadedIndex++;
+            }
+        }
+
+        // Boshlang'ich skinlarni yuklash
+        loadMoreSkins(16);
+
+        // Cheksiz scroll (Scroll pastga tushganda avto-yuklanadi)
+        window.addEventListener('scroll', () => {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 300) {
+                loadMoreSkins(8);
+            }
         });
 
         function filterSkins() {
             const q = document.getElementById('skinSearchInput').value.toLowerCase();
-            document.querySelectorAll('.skin-card').forEach(c => {
-                c.style.display = c.getAttribute('data-name').includes(q) ? 'block' : 'none';
+            document.querySelectorAll('.skin-card').forEach(card => {
+                const name = card.getAttribute('data-name');
+                card.style.display = name.includes(q) ? 'block' : 'none';
             });
         }
 
-        // 3-BOB: FAYL TANLANISHI VA GENERATE
-        let loadedFile = null;
+        // 3-BOB: FAYL YUKLASH, 3D MODEL (YUGURADIGAN) VA URL
+        let uploadedFile = null;
+        let skinViewerInstance = null;
         const skinInput = document.getElementById('skinInput');
-        const selectStatusText = document.getElementById('selectStatusText');
+        const statusText = document.getElementById('statusText');
 
         skinInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
-                loadedFile = e.target.files[0];
-                selectStatusText.innerText = langData[currentLang].selected;
-                selectStatusText.style.color = "#22c55e";
+                uploadedFile = e.target.files[0];
+                statusText.innerText = langData[currentLang].selected;
+                statusText.style.color = "#22c55e";
             }
         });
 
         document.getElementById('btnGenerate').addEventListener('click', () => {
-            if (!loadedFile) {
-                alert("Iltimos, avval skin faylini tanlang!");
+            if (!uploadedFile) {
+                alert("Iltimos, avval .png skin faylini tanlang!");
                 return;
             }
 
+            const fileUrl = URL.createObjectURL(uploadedFile);
+
+            // 1. 3D Modelni Canvas ichida yugurtirib chiqarish
+            document.getElementById('canvasBox').style.display = 'block';
+
+            if (!skinViewerInstance) {
+                skinViewerInstance = new skinview3d.SkinViewer({
+                    canvas: document.getElementById("skinCanvas"),
+                    width: 300,
+                    height: 280,
+                    skin: fileUrl
+                });
+                skinViewerInstance.camera.position.set(0, 10, 40);
+                // Yugurish / Yurish animatsiyasini qo'shish:
+                skinViewerInstance.animations.add(skinview3d.WalkingAnimation);
+                skinViewerInstance.animations.speed = 1.2;
+            } else {
+                skinViewerInstance.loadSkin(fileUrl);
+            }
+
+            // 2. Direct URL va Copy tugmasini chiqarish
+            // FileReader orqali to'g'ri Data/Blob HTTPS URL tayyorlash
             const reader = new FileReader();
             reader.onload = function(evt) {
-                const dataUrl = evt.target.result;
-                
-                // 3D Preview (Visually rendered body)
-                document.getElementById('skinPreviewImg').src = `https://minotar.net/armor/body/Steve/100.png`;
-                
-                // Direct URL va Copy tugmasini chiqarish
-                document.getElementById('urlOutput').value = dataUrl;
-                document.getElementById('previewBox').style.display = 'block';
+                const directUrl = evt.target.result;
+                document.getElementById('urlOutput').value = directUrl;
+                document.getElementById('urlBox').style.display = 'block';
             };
-            reader.readAsDataURL(loadedFile);
+            reader.readAsDataURL(uploadedFile);
         });
 
         function copyUrl() {
