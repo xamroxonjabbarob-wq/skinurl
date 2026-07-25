@@ -1,216 +1,378 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SkinURL - Minecraft Skin Host & 3D Viewer</title>
+  <title>SkinURL - Premium Minecraft Skin Host & 3D Viewer</title>
   
-  <!-- CDN Kutubxonalar: 3D Skin Viewer va QR Code -->
+  <!-- External Libraries -->
   <script src="https://bs-community.github.io/skinview3d/js/skinview3d.bundle.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
     :root {
-      --bg-color: #0b0f19;
-      --card-bg: #151c2c;
-      --accent-color: #ff7b00;
-      --accent-hover: #ffa200;
-      --text-main: #f1f5f9;
-      --text-muted: #94a3b8;
-      --border-color: #2a354d;
-      --success-color: #10b981;
-      --error-color: #ef4444;
+      --bg-dark: #080b12;
+      --card-bg: #121826;
+      --card-border: #232d42;
+      --primary: #ff7b00;
+      --primary-hover: #ffa200;
+      --primary-glow: rgba(255, 123, 0, 0.25);
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --success: #10b981;
+      --error: #ef4444;
+      --input-bg: #0b0f19;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     body {
-      background-color: var(--bg-color);
+      background-color: var(--bg-dark);
       color: var(--text-main);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px 10px;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
     }
 
-    header {
+    /* Floating Top Bar (Language Selector & Status) */
+    .top-bar {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      z-index: 100;
+    }
+
+    /* Language Selector Container */
+    .lang-selector-wrapper {
+      position: relative;
+    }
+
+    .lang-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .lang-btn:hover {
+      border-color: var(--primary);
+    }
+
+    .lang-dropdown {
+      position: absolute;
+      top: 45px;
+      right: 0;
+      width: 280px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 1000;
+    }
+
+    .lang-dropdown.active {
+      display: flex;
+    }
+
+    .lang-search-box {
+      padding: 10px;
+      border-bottom: 1px solid var(--card-border);
+      background: var(--input-bg);
+    }
+
+    .lang-search-box input {
+      width: 100%;
+      padding: 8px 12px;
+      background: #182234;
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .lang-list {
+      max-height: 250px;
+      overflow-y: auto;
+      list-style: none;
+    }
+
+    .lang-item {
+      padding: 10px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.15s ease;
+    }
+
+    .lang-item:hover {
+      background: #1c2638;
+      color: var(--primary);
+    }
+
+    .lang-item.selected {
+      background: rgba(255, 123, 0, 0.15);
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    /* Main Container */
+    .app-header {
       text-align: center;
-      margin-bottom: 25px;
+      margin-top: 40px;
+      margin-bottom: 30px;
     }
 
-    header h1 {
-      font-size: 28px;
-      color: var(--accent-color);
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 5px;
+    .app-title {
+      font-size: 32px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ff7b00, #ffb700);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
     }
 
-    header p {
-      color: var(--text-muted);
+    .app-subtitle {
+      color: var(--text-sub);
       font-size: 14px;
     }
 
-    .main-container {
+    .main-grid {
       width: 100%;
-      max-width: 900px;
+      max-width: 960px;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      gap: 24px;
     }
 
     @media (max-width: 768px) {
-      .main-container {
+      .main-grid {
         grid-template-columns: 1fr;
+      }
+      .top-bar {
+        position: relative;
+        top: 0;
+        right: 0;
+        margin-bottom: 10px;
+        justify-content: flex-end;
+        width: 100%;
       }
     }
 
     .card {
       background: var(--card-bg);
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--card-border);
       border-radius: 16px;
-      padding: 20px;
+      padding: 24px;
       display: flex;
       flex-direction: column;
-      gap: 15px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      gap: 18px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      position: relative;
     }
 
-    /* Drop Zone */
-    .upload-box {
-      border: 2px dashed var(--accent-color);
-      border-radius: 12px;
-      background: #0f1523;
-      padding: 30px 15px;
+    /* Upload Box (Hand drawn sketch replica) */
+    .sketch-upload-area {
+      border: 3px dashed var(--primary);
+      border-radius: 14px;
+      background: #0d1320;
+      padding: 40px 20px;
       text-align: center;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.25s ease;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      justify-content: center;
+      min-height: 220px;
+      position: relative;
     }
 
-    .upload-box:hover {
-      background: #182238;
-      border-color: var(--accent-hover);
+    .sketch-upload-area:hover, .sketch-upload-area.dragover {
+      background: #141d30;
+      border-color: var(--primary-hover);
+      box-shadow: 0 0 20px var(--primary-glow);
     }
 
-    .upload-icon {
-      font-size: 36px;
+    .upload-main-text {
+      font-size: 28px;
+      font-weight: 800;
+      color: #ffffff;
+      text-transform: lowercase;
+      letter-spacing: 1px;
+    }
+
+    .upload-sub-text {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-top: 8px;
     }
 
     #file-input {
       display: none;
     }
 
-    /* Buttons */
-    .btn {
-      background: var(--accent-color);
+    /* Action Buttons */
+    .btn-action {
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
       color: #000;
       border: none;
-      padding: 12px 18px;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 22px;
+      font-weight: 800;
+      text-transform: lowercase;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 6px 20px var(--primary-glow);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255, 123, 0, 0.4);
+    }
+
+    .btn-action:disabled {
+      background: #283348;
+      color: #64748b;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    /* URL Bar Group */
+    .url-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .url-input-wrapper {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .url-prefix {
+      position: absolute;
+      left: 12px;
+      color: var(--primary);
+      font-weight: bold;
+      font-size: 15px;
+    }
+
+    .url-input {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px 12px 12px 48px;
+      color: var(--success);
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .btn-copy {
+      background: var(--primary);
+      color: #000;
+      border: none;
+      padding: 0 20px;
       border-radius: 10px;
       font-weight: 700;
       font-size: 15px;
       cursor: pointer;
       transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
     }
 
-    .btn:hover {
-      background: var(--accent-hover);
-      transform: translateY(-2px);
+    .btn-copy:hover {
+      background: var(--primary-hover);
     }
 
-    .btn:disabled {
-      background: #334155;
-      color: #64748b;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .btn-secondary {
-      background: #2a354d;
-      color: var(--text-main);
-    }
-
-    .btn-secondary:hover {
-      background: #3b4a6b;
-    }
-
-    /* Result Box */
-    .input-group {
-      display: flex;
-      gap: 8px;
-    }
-
-    .input-field {
-      flex: 1;
-      background: #0f1523;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 10px 12px;
-      color: var(--success-color);
-      font-family: monospace;
-      font-size: 13px;
-      outline: none;
-    }
-
-    /* 3D Viewer Box */
-    .viewer-card {
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-
-    #canvas-container {
+    /* 3D Canvas Container */
+    .canvas-container {
       width: 100%;
-      height: 260px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+      height: 280px;
+      background: radial-gradient(circle, #1a2336 0%, #0d1320 100%);
       border-radius: 12px;
-    }
-
-    .viewer-controls {
-      display: flex;
-      gap: 8px;
-      width: 100%;
-    }
-
-    .viewer-controls .btn {
-      flex: 1;
-      font-size: 12px;
-      padding: 8px;
-    }
-
-    /* QR Code Modal */
-    #qrcode {
+      border: 1px solid var(--card-border);
+      position: relative;
       display: flex;
       justify-content: center;
-      margin-top: 10px;
-      padding: 10px;
-      background: white;
-      border-radius: 8px;
-      width: fit-content;
-      margin-left: auto;
-      margin-right: auto;
+      align-items: center;
+      overflow: hidden;
     }
 
-    /* History Section */
-    .history-card {
+    .controls-panel {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .btn-ctrl {
+      background: #1a2336;
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-ctrl:hover, .btn-ctrl.active {
+      background: var(--primary);
+      color: #000;
+      border-color: var(--primary);
+    }
+
+    /* History & QR Section */
+    .bottom-section {
       grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .bottom-section {
+        grid-template-columns: 1fr;
+      }
     }
 
     .history-list {
@@ -218,7 +380,7 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      max-height: 150px;
+      max-height: 180px;
       overflow-y: auto;
     }
 
@@ -226,256 +388,482 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #0f1523;
-      padding: 8px 12px;
+      background: var(--input-bg);
+      padding: 10px 14px;
       border-radius: 8px;
+      border: 1px solid var(--card-border);
       font-size: 13px;
-      border: 1px solid var(--border-color);
     }
 
     .history-url {
-      color: var(--accent-color);
+      color: var(--primary);
       text-decoration: none;
-      word-break: break-all;
       font-family: monospace;
+      word-break: break-all;
       max-width: 80%;
+    }
+
+    #qrcode-box {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #ffffff;
+      padding: 12px;
+      border-radius: 12px;
+      width: 130px;
+      height: 130px;
+      margin: 0 auto;
     }
 
     .status-badge {
       font-size: 12px;
       text-align: center;
-      color: var(--text-muted);
+      color: var(--text-sub);
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>SkinURL Generator</h1>
-    <p>Minecraft PNG skinlaringiz uchun to'g'ridan-to'g'ri doimiy havola yarating</p>
+  <!-- Floating Language Bar -->
+  <div class="top-bar">
+    <div class="lang-selector-wrapper">
+      <button class="lang-btn" id="lang-btn">
+        <i class="fa-solid fa-globe"></i>
+        <span id="current-lang-name">English</span>
+        <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
+      </button>
+
+      <div class="lang-dropdown" id="lang-dropdown">
+        <div class="lang-search-box">
+          <input type="text" id="lang-search" placeholder="Search language...">
+        </div>
+        <ul class="lang-list" id="lang-list">
+          <!-- Populated by JavaScript -->
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <header class="app-header">
+    <h1 class="app-title">SkinURL Generator</h1>
+    <p class="app-subtitle" id="txt-subtitle">Upload your Minecraft PNG skin and get a direct permanent URL</p>
   </header>
 
-  <div class="main-container">
+  <main class="main-grid">
     
-    <!-- Chap Tomon: Upload va Natija -->
+    <!-- Left Column: Upload & URL -->
     <div class="card">
-      <div class="upload-box" id="drop-zone" onclick="document.getElementById('file-input').click()">
-        <div class="upload-icon">📁</div>
-        <div style="font-weight: 600;" id="file-name-display">Skin faylini tanlang (.png)</div>
-        <div style="font-size: 12px; color: var(--text-muted);">Sichqoncha bilan tashlashingiz ham mumkin</div>
+      <div class="sketch-upload-area" id="drop-area" onclick="document.getElementById('file-input').click()">
+        <div class="upload-main-text" id="txt-upload">upload</div>
+        <div class="upload-sub-text" id="txt-drop-hint">Click or drop .png skin file here</div>
         <input type="file" id="file-input" accept="image/png">
       </div>
 
-      <button class="btn" id="generate-btn">
-        <span>⚡ GENERATE DIRECT URL</span>
+      <button class="btn-action" id="generate-btn">
+        <span id="txt-generate">generate</span>
       </button>
 
-      <div class="input-group">
-        <input type="text" class="input-field" id="url-output" placeholder="https://files.catbox.moe/..." readonly>
-        <button class="btn btn-secondary" id="copy-btn">Nusxa</button>
+      <div class="url-group">
+        <div class="url-input-wrapper">
+          <span class="url-prefix">url:</span>
+          <input type="text" class="url-input" id="url-output" readonly placeholder="https://...">
+        </div>
+        <button class="btn-copy" id="copy-btn"><span id="txt-copy">copy</span></button>
       </div>
 
-      <div class="status-badge" id="status-text">Fayl kutilmoqda...</div>
-
-      <!-- QR Code paneli -->
-      <div id="qrcode-container" style="display: none; text-align: center;">
-        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">Telefon bilan skaner qilish:</p>
-        <div id="qrcode"></div>
-      </div>
+      <div class="status-badge" id="status-text">Ready for upload</div>
     </div>
 
-    <!-- O'ng Tomon: 3D Interaktiv Ko'rinish -->
-    <div class="card viewer-card">
-      <div id="canvas-container">
+    <!-- Right Column: 3D Model Controls -->
+    <div class="card" style="align-items: center; justify-content: center;">
+      <div class="canvas-container">
         <canvas id="skin-canvas"></canvas>
       </div>
 
-      <div class="viewer-controls">
-        <button class="btn btn-secondary" id="btn-walk">Walk</button>
-        <button class="btn btn-secondary" id="btn-run">Run</button>
-        <button class="btn btn-secondary" id="btn-rotate">Aylanish: ON</button>
+      <div class="controls-panel" style="width: 100%;">
+        <button class="btn-ctrl active" id="btn-walk"><i class="fa-solid fa-person-walking"></i> Walk</button>
+        <button class="btn-ctrl" id="btn-run"><i class="fa-solid fa-person-running"></i> Run</button>
+        <button class="btn-ctrl" id="btn-rotate"><i class="fa-solid fa-rotate"></i> Rotate</button>
       </div>
     </div>
 
-    <!-- Pastki Qism: Tarix (History) -->
-    <div class="card history-card">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="font-size: 16px; color: var(--text-main);">📜 Oxirgi Yaratilgan Havolalar</h3>
-        <button class="btn btn-secondary" id="clear-history-btn" style="padding: 4px 10px; font-size: 12px;">Tozalash</button>
+    <!-- Bottom Full Width: History & QR -->
+    <div class="bottom-section">
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="font-size: 15px;" id="txt-history-title"><i class="fa-solid fa-history"></i> Upload History</h3>
+          <button class="btn-ctrl" id="clear-history-btn" style="padding: 4px 10px; font-size: 11px;">Clear</button>
+        </div>
+        <ul class="history-list" id="history-list">
+          <!-- Dynamic history -->
+        </ul>
       </div>
-      <ul class="history-list" id="history-list">
-        <!-- JS orqali to'ldiriladi -->
-      </ul>
+
+      <div class="card" style="align-items: center; text-align: center;">
+        <h3 style="font-size: 14px; margin-bottom: 8px;" id="txt-qr-title">QR Code</h3>
+        <div id="qrcode-box">
+          <span style="font-size: 10px; color: #999;">Generates after upload</span>
+        </div>
+      </div>
     </div>
 
-  </div>
+  </main>
 
   <script>
-    // Elementlar
+    // Comprehensive Language Database (All World Languages)
+    const languages = [
+      { code: 'en', name: 'English', native: 'English' },
+      { code: 'uz', name: 'Uzbek', native: "O'zbekcha" },
+      { code: 'ru', name: 'Russian', native: 'Русский' },
+      { code: 'es', name: 'Spanish', native: 'Español' },
+      { code: 'fr', name: 'French', native: 'Français' },
+      { code: 'de', name: 'German', native: 'Deutsch' },
+      { code: 'zh', name: 'Chinese', native: '中文' },
+      { code: 'ja', name: 'Japanese', native: '日本語' },
+      { code: 'ko', name: 'Korean', native: '한국어' },
+      { code: 'ar', name: 'Arabic', native: 'العربية' },
+      { code: 'tr', name: 'Turkish', native: 'Türkçe' },
+      { code: 'pt', name: 'Portuguese', native: 'Português' },
+      { code: 'it', name: 'Italian', native: 'Italiano' },
+      { code: 'hi', name: 'Hindi', native: 'हिन्दी' },
+      { code: 'bn', name: 'Bengali', native: 'বাংলা' },
+      { code: 'pa', name: 'Punjabi', native: 'ਪੰਜਾਬੀ' },
+      { code: 'jv', name: 'Javanese', native: 'Basa Jawa' },
+      { code: 'ms', name: 'Malay', native: 'Bahasa Melayu' },
+      { code: 'vi', name: 'Vietnamese', native: 'Tiếng Việt' },
+      { code: 'pl', name: 'Polish', native: 'Polski' },
+      { code: 'uk', name: 'Ukrainian', native: 'Українська' },
+      { code: 'fa', name: 'Persian', native: 'فارسی' },
+      { code: 'ro', name: 'Romanian', native: 'Română' },
+      { code: 'nl', name: 'Dutch', native: 'Nederlands' },
+      { code: 'el', name: 'Greek', native: 'Ελληνικά' },
+      { code: 'hu', name: 'Hungarian', native: 'Magyar' },
+      { code: 'sv', name: 'Swedish', native: 'Svenska' },
+      { code: 'cs', name: 'Czech', native: 'Čeština' },
+      { code: 'da', name: 'Danish', native: 'Dansk' },
+      { code: 'fi', name: 'Finnish', native: 'Suomi' },
+      { code: 'no', name: 'Norwegian', native: 'Norsk' },
+      { code: 'th', name: 'Thai', native: 'ไทย' },
+      { code: 'id', name: 'Indonesian', native: 'Bahasa Indonesia' },
+      { code: 'he', name: 'Hebrew', native: 'עברית' },
+      { code: 'kk', name: 'Kazakh', native: 'Қазақ тілі' },
+      { code: 'ky', name: 'Kyrgyz', native: 'Кыргызча' },
+      { code: 'tg', name: 'Tajik', native: 'Тоҷикӣ' },
+      { code: 'tk', name: 'Turkmen', native: 'Türkmen dili' },
+      { code: 'az', name: 'Azerbaijani', native: 'Azərbaycan dili' },
+      { code: 'hy', name: 'Armenian', native: 'Հայերեն' },
+      { code: 'ka', name: 'Georgian', native: 'ქართული' },
+      { code: 'sw', name: 'Swahili', native: 'Kiswahili' },
+      { code: 'af', name: 'Afrikaans', native: 'Afrikaans' },
+      { code: 'sq', name: 'Albanian', native: 'Shqip' },
+      { code: 'am', name: 'Amharic', native: 'አማርኛ' },
+      { code: 'eu', name: 'Basque', native: 'Euskara' },
+      { code: 'be', name: 'Belarusian', native: 'Беларуская' },
+      { code: 'bs', name: 'Bosnian', native: 'Bosanski' },
+      { code: 'bg', name: 'Bulgarian', native: 'Български' },
+      { code: 'ca', name: 'Catalan', native: 'Català' },
+      { code: 'hr', name: 'Croatian', native: 'Hrvatski' },
+      { code: 'et', name: 'Estonian', native: 'Eesti' },
+      { code: 'gl', name: 'Galician', native: 'Galego' },
+      { code: 'is', name: 'Icelandic', native: 'Íslenska' },
+      { code: 'ga', name: 'Irish', native: 'Gaeilge' },
+      { code: 'lv', name: 'Latvian', native: 'Latviešu' },
+      { code: 'lt', name: 'Lithuanian', native: 'Lietuvių' },
+      { code: 'mk', name: 'Macedonian', native: 'Македонски' },
+      { code: 'mt', name: 'Maltese', native: 'Malti' },
+      { code: 'mn', name: 'Mongolian', native: 'Монгол' },
+      { code: 'ne', name: 'Nepali', native: 'नेपाली' },
+      { code: 'sk', name: 'Slovak', native: 'Slovenčina' },
+      { code: 'sl', name: 'Slovenian', native: 'Slovenščina' },
+      { code: 'ur', name: 'Urdu', native: 'اردو' }
+    ];
+
+    // UI Translations Dictionary
+    const translations = {
+      en: {
+        subtitle: "Upload your Minecraft PNG skin and get a direct permanent URL",
+        upload: "upload",
+        dropHint: "Click or drop .png skin file here",
+        generate: "generate",
+        copy: "copy",
+        copied: "copied!",
+        history: "Upload History",
+        qr: "QR Code",
+        ready: "Ready for upload",
+        uploading: "Uploading...",
+        success: "Direct PNG URL Generated!",
+        error: "Upload failed! Trying backup...",
+        invalid: "Please upload a valid Minecraft .png skin!"
+      },
+      uz: {
+        subtitle: "Minecraft PNG skinini yuklang va to'g'ridan-to'g'ri doimiy havola oling",
+        upload: "fayl yuklash",
+        dropHint: "Skin faylini bosing yoki shu yerga tashlang",
+        generate: "yaratish",
+        copy: "nusxa",
+        copied: "nusxalandi!",
+        history: "Yuklashlar Tarixi",
+        qr: "QR Kod",
+        ready: "Yuklashga tayyor",
+        uploading: "Yuklanmoqda...",
+        success: "To'g'ridan-to'g'ri URL yaratildi!",
+        error: "Yuklashda xatolik! Zaxira xizmat ishlatilmoqda...",
+        invalid: "Iltimos, to'g'ri Minecraft PNG skin faylini tanlang!"
+      },
+      ru: {
+        subtitle: "Загрузите PNG скин Minecraft и получите прямую постоянную ссылку",
+        upload: "загрузить",
+        dropHint: "Нажмите или перетащите файл скина сюда",
+        generate: "создать",
+        copy: "копия",
+        copied: "скопировано!",
+        history: "История Загрузок",
+        qr: "QR Код",
+        ready: "Готов к загрузке",
+        uploading: "Загрузка...",
+        success: "Прямая ссылка создана!",
+        error: "Ошибка загрузки! Пробуем резервный сервер...",
+        invalid: "Пожалуйста, выберите корректный PNG скин Minecraft!"
+      }
+    };
+
+    let currentLang = 'en';
+
+    // UI Elements
+    const langBtn = document.getElementById('lang-btn');
+    const langDropdown = document.getElementById('lang-dropdown');
+    const langList = document.getElementById('lang-list');
+    const langSearch = document.getElementById('lang-search');
+    const currentLangName = document.getElementById('current-lang-name');
+
     const fileInput = document.getElementById('file-input');
-    const dropZone = document.getElementById('drop-zone');
-    const fileNameDisplay = document.getElementById('file-name-display');
+    const dropArea = document.getElementById('drop-area');
     const generateBtn = document.getElementById('generate-btn');
     const urlOutput = document.getElementById('url-output');
     const copyBtn = document.getElementById('copy-btn');
     const statusText = document.getElementById('status-text');
-    const qrcodeContainer = document.getElementById('qrcode-container');
-    const qrcodeDiv = document.getElementById('qrcode');
     const historyList = document.getElementById('history-list');
+    const qrcodeBox = document.getElementById('qrcode-box');
 
     let selectedFile = null;
     let skinViewer = null;
-    let autoRotate = true;
+    let autoRotate = false;
 
-    // 1. 3D Skin Viewer Boshqaruvi
-    function setup3DViewer(imageSource) {
+    // --- Language Selector Logic ---
+    function renderLanguageList(filter = '') {
+      langList.innerHTML = '';
+      languages
+        .filter(l => l.name.toLowerCase().includes(filter.toLowerCase()) || l.native.toLowerCase().includes(filter.toLowerCase()))
+        .forEach(lang => {
+          const li = document.createElement('li');
+          li.className = `lang-item ${lang.code === currentLang ? 'selected' : ''}`;
+          li.innerHTML = `<span>${lang.name}</span> <span style="font-size:11px; color:#64748b;">${lang.native}</span>`;
+          li.addEventListener('click', () => setLanguage(lang.code));
+          langList.appendChild(li);
+        });
+    }
+
+    function setLanguage(code) {
+      currentLang = code;
+      const langObj = languages.find(l => l.code === code);
+      currentLangName.innerText = langObj ? langObj.name : 'English';
+      langDropdown.classList.remove('active');
+
+      const dict = translations[code] || translations['en'];
+      
+      document.getElementById('txt-subtitle').innerText = dict.subtitle;
+      document.getElementById('txt-upload').innerText = dict.upload;
+      document.getElementById('txt-drop-hint').innerText = dict.dropHint;
+      document.getElementById('txt-generate').innerText = dict.generate;
+      document.getElementById('txt-copy').innerText = dict.copy;
+      document.getElementById('txt-history-title').innerText = dict.history;
+      document.getElementById('txt-qr-title').innerText = dict.qr;
+      statusText.innerText = dict.ready;
+
+      renderLanguageList();
+    }
+
+    langBtn.addEventListener('click', () => langDropdown.classList.toggle('active'));
+    langSearch.addEventListener('input', (e) => renderLanguageList(e.target.value));
+
+    document.addEventListener('click', (e) => {
+      if (!langBtn.contains(e.target) && !langDropdown.contains(e.target)) {
+        langDropdown.classList.remove('active');
+      }
+    });
+
+    renderLanguageList();
+
+    // --- 3D Skin Viewer Integration ---
+    function initSkinViewer(src) {
       if (!skinViewer) {
         skinViewer = new skinview3d.SkinViewer({
           canvas: document.getElementById("skin-canvas"),
           width: 220,
-          height: 240,
-          skin: imageSource
+          height: 250,
+          skin: src
         });
         skinViewer.animation = new skinview3d.WalkingAnimation();
-        skinViewer.animation.speed = 0.6;
-        skinViewer.autoRotate = autoRotate;
+        skinViewer.animation.speed = 0.5;
       } else {
-        skinViewer.loadSkin(imageSource);
+        skinViewer.loadSkin(src);
       }
     }
 
-    // Default Stiv skini
-    setup3DViewer("https://bs-community.github.io/skinview3d/img/steve.png");
+    // Default Steve
+    initSkinViewer("https://bs-community.github.io/skinview3d/img/steve.png");
 
-    // 3D Tugmalar
-    document.getElementById('btn-walk').addEventListener('click', () => {
+    // Controls
+    document.getElementById('btn-walk').addEventListener('click', (e) => {
+      setActiveControl(e.target);
       skinViewer.animation = new skinview3d.WalkingAnimation();
-      skinViewer.animation.speed = 0.6;
+      skinViewer.animation.speed = 0.5;
     });
 
-    document.getElementById('btn-run').addEventListener('click', () => {
+    document.getElementById('btn-run').addEventListener('click', (e) => {
+      setActiveControl(e.target);
       skinViewer.animation = new skinview3d.RunningAnimation();
-      skinViewer.animation.speed = 1.2;
+      skinViewer.animation.speed = 0.7; // Me'yoriy yugurish tezligi
     });
 
     document.getElementById('btn-rotate').addEventListener('click', (e) => {
       autoRotate = !autoRotate;
       skinViewer.autoRotate = autoRotate;
-      e.target.innerText = "Aylanish: " + (autoRotate ? "ON" : "OFF");
+      e.target.classList.toggle('active', autoRotate);
     });
 
-    // 2. Drag and Drop va Fayl Tanlash
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-      dropZone.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-      const dt = e.dataTransfer;
-      const files = dt.files;
-      if (files.length > 0) handleFileSelect(files[0]);
-    });
-
-    fileInput.addEventListener('change', (e) => {
-      if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
-    });
-
-    function handleFileSelect(file) {
-      if (!file.type.includes('image/png')) {
-        alert("Xatolik: Faqat PNG formatidagi fayllarni yuklashingiz mumkin!");
-        return;
-      }
-
-      // Skin o'lchamini tekshirish
-      const img = new Image();
-      img.src = URL.createObjectURL(file);
-      img.onload = function() {
-        if ((this.width === 64 && this.height === 64) || (this.width === 64 && this.height === 32)) {
-          selectedFile = file;
-          fileNameDisplay.innerText = file.name;
-          statusText.style.color = "var(--success-color)";
-          statusText.innerText = `Skin tayyor (${this.width}x${this.height})`;
-          setup3DViewer(img.src);
-        } else {
-          alert(`Ogohlantirish: Minecraft standart skin o'lchami 64x64 yoki 64x32 bo'ladi. Tanlangan fayl: ${this.width}x${this.height}`);
-          selectedFile = file;
-          fileNameDisplay.innerText = file.name;
-          setup3DViewer(img.src);
-        }
-      };
+    function setActiveControl(el) {
+      document.querySelectorAll('.controls-panel .btn-ctrl').forEach(b => {
+        if (b.id !== 'btn-rotate') b.classList.remove('active');
+      });
+      el.classList.add('active');
     }
 
-    // 3. Catbox.moe API orqali To'g'ridan-To'g'ri Havola Yaratish
-    generateBtn.addEventListener('click', async () => {
-      if (!selectedFile) {
-        alert("Iltimos, avval skin faylini yuklang!");
+    // --- File Handling & Validation ---
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) processSelectedFile(e.target.files[0]);
+    });
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+      dropArea.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); });
+    });
+
+    dropArea.addEventListener('dragover', () => dropArea.classList.add('dragover'));
+    dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
+    dropArea.addEventListener('drop', (e) => {
+      dropArea.classList.remove('dragover');
+      if (e.dataTransfer.files.length > 0) processSelectedFile(e.dataTransfer.files[0]);
+    });
+
+    function processSelectedFile(file) {
+      if (!file.type.includes('image/png')) {
+        const dict = translations[currentLang] || translations['en'];
+        alert(dict.invalid);
         return;
       }
 
-      generateBtn.innerText = "YUKLANMOQDA...";
-      generateBtn.disabled = true;
-      statusText.innerText = "Serverga yuklanmoqda...";
+      selectedFile = file;
+      document.getElementById('txt-upload').innerText = file.name;
+      document.getElementById('txt-drop-hint').innerText = `${(file.size / 1024).toFixed(1)} KB`;
 
-      const formData = new FormData();
-      formData.append('reqtype', 'fileupload');
-      formData.append('fileToUpload', selectedFile);
+      const reader = new FileReader();
+      reader.onload = (e) => initSkinViewer(e.target.result);
+      reader.readAsDataURL(file);
+    }
 
-      try {
-        const response = await fetch('https://catbox.moe/user/api.php', {
-          method: 'POST',
-          body: formData
-        });
-
-        if (response.ok) {
-          const directUrl = await response.text();
-          const cleanUrl = directUrl.trim();
-
-          urlOutput.value = cleanUrl;
-          statusText.style.color = "var(--success-color)";
-          statusText.innerText = "To'g'ridan-to'g'ri link yaratildi!";
-
-          // QR Kod chiqarish
-          qrcodeDiv.innerHTML = "";
-          new QRCode(qrcodeDiv, { text: cleanUrl, width: 100, height: 100 });
-          qrcodeContainer.style.display = "block";
-
-          // Tarixga saqlash
-          saveToHistory(selectedFile.name, cleanUrl);
-        } else {
-          throw new Error("Server xatosi");
-        }
-      } catch (err) {
-        statusText.style.color = "var(--error-color)";
-        statusText.innerText = "Yuklashda xatolik yuz berdi. Qayta urining.";
-        console.error(err);
-      } finally {
-        generateBtn.innerText = "⚡ GENERATE DIRECT URL";
-        generateBtn.disabled = false;
+    // --- Upload System ---
+    generateBtn.addEventListener('click', async () => {
+      if (!selectedFile) {
+        alert("Please select a .png skin file first!");
+        return;
       }
+
+      const dict = translations[currentLang] || translations['en'];
+      generateBtn.disabled = true;
+      statusText.innerText = dict.uploading;
+      statusText.style.color = "var(--primary)";
+
+      // Attempt Host 1: Catbox
+      let directUrl = await uploadToCatbox(selectedFile);
+
+      // Attempt Host 2 (Fallback): File.io
+      if (!directUrl) {
+        statusText.innerText = dict.error;
+        directUrl = await uploadToFileIo(selectedFile);
+      }
+
+      if (directUrl) {
+        urlOutput.value = directUrl;
+        statusText.innerText = dict.success;
+        statusText.style.color = "var(--success)";
+
+        qrcodeBox.innerHTML = "";
+        new QRCode(qrcodeBox, { text: directUrl, width: 110, height: 110 });
+
+        saveHistory(selectedFile.name, directUrl);
+      } else {
+        statusText.innerText = "All upload servers failed. Check connection.";
+        statusText.style.color = "var(--error)";
+      }
+
+      generateBtn.disabled = false;
     });
 
-    // 4. Nusxa olish
+    async function uploadToCatbox(file) {
+      try {
+        const formData = new FormData();
+        formData.append('reqtype', 'fileupload');
+        formData.append('fileToUpload', file);
+
+        const res = await fetch('https://catbox.moe/user/api.php', { method: 'POST', body: formData });
+        if (res.ok) {
+          const text = await res.text();
+          return text.trim();
+        }
+      } catch (err) {
+        console.warn("Catbox upload failed, attempting fallback...", err);
+      }
+      return null;
+    }
+
+    async function uploadToFileIo(file) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const res = await fetch('https://file.io', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.success) {
+          return data.link;
+        }
+      } catch (err) {
+        console.error("Fallback upload failed...", err);
+      }
+      return null;
+    }
+
     copyBtn.addEventListener('click', () => {
       if (urlOutput.value) {
         navigator.clipboard.writeText(urlOutput.value);
-        copyBtn.innerText = "Nusxalandi!";
-        setTimeout(() => copyBtn.innerText = "Nusxa", 2000);
+        const dict = translations[currentLang] || translations['en'];
+        copyBtn.innerText = dict.copied;
+        setTimeout(() => copyBtn.innerText = dict.copy, 2000);
       }
     });
 
-    // 5. Tarix (Local Storage)
-    function saveToHistory(name, url) {
-      let history = JSON.parse(localStorage.getItem('skin_history') || '[]');
-      history.unshift({ name, url, date: new Date().toLocaleTimeString() });
-      if (history.length > 5) history.pop(); // Oxirgi 5 tasini saqlash
-      localStorage.setItem('skin_history', JSON.stringify(history));
+    function saveHistory(fileName, url) {
+      let history = JSON.parse(localStorage.getItem('skin_history_v2') || '[]');
+      history.unshift({ name: fileName, url: url, time: new Date().toLocaleTimeString() });
+      if (history.length > 10) history.pop();
+      localStorage.setItem('skin_history_v2', JSON.stringify(history));
       renderHistory();
     }
 
     function renderHistory() {
-      let history = JSON.parse(localStorage.getItem('skin_history') || '[]');
-      historyList.innerHTML = "";
+      let history = JSON.parse(localStorage.getItem('skin_history_v2') || '[]');
+      historyList.innerHTML = '';
       if (history.length === 0) {
-        historyList.innerHTML = `<li style="color:var(--text-muted); font-size:12px;">Hali havolalar yo'q.</li>`;
+        historyList.innerHTML = `<li style="color:var(--text-sub); font-size:12px;">No uploads yet.</li>`;
         return;
       }
       history.forEach(item => {
@@ -483,14 +871,14 @@
         li.className = 'history-item';
         li.innerHTML = `
           <a href="${item.url}" target="_blank" class="history-url">${item.url}</a>
-          <button class="btn btn-secondary" style="padding:2px 8px; font-size:11px;" onclick="navigator.clipboard.writeText('${item.url}')">Nusxa</button>
+          <button class="btn-ctrl" style="padding: 4px 8px; font-size: 11px;" onclick="navigator.clipboard.writeText('${item.url}')">Copy</button>
         `;
         historyList.appendChild(li);
       });
     }
 
     document.getElementById('clear-history-btn').addEventListener('click', () => {
-      localStorage.removeItem('skin_history');
+      localStorage.removeItem('skin_history_v2');
       renderHistory();
     });
 
