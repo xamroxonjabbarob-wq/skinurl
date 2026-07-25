@@ -1,0 +1,73 @@
+/* VIEWER SECTION */
+.viewer-section, .tools-section {
+    background-color: #1e293b;
+    border-radius: 12px;
+    padding: 25px;
+    border: 1px solid #334155;
+}
+
+.viewer-section h2, .tools-section h2 {
+    margin-bottom: 20px;
+    color: #f1f5f9;
+}
+
+.canvas-container {
+    width: 100%;
+    height: 380px;
+    background: radial-gradient(circle, #334155 0%, #0f172a 100%);
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.viewer-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    justify-content: center;
+}
+
+/* DROP ZONE */
+.drop-zone {
+    border: 2px dashed #0284c7;
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+    background-color: #0f172a;
+    margin-bottom: 20px;
+}
+
+.upload-icon {
+    font-size: 40px;
+    color: #0284c7;
+    margin-bottom: 10px;
+}
+
+/* INPUT GROUPS */
+.input-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.input-group input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #334155;
+    background-color: #0f172a;
+    color: white;
+    outline: none;
+}
+
+.nickname-box {
+    margin-bottom: 20px;
+}
+
+.result-box {
+    background-color: #0f172a;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #22c55e;
+}
