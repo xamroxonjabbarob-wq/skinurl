@@ -3,79 +3,293 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkinURL - Minecraft Skins & Tools</title>
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/viewer.css">
-    <!-- Font Awesome Ikonalar uchun -->
+    <title>SkinURL - Minecraft Skin 3D & Generator</title>
+    
+    <!-- Font Awesome Ikonalar -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <!-- Skinview3d Kutubxonasi -->
     <script src="https://bs-community.github.io/skinview3d/js/skinview3d.bundle.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 5%;
+            background-color: #1e293b;
+            border-bottom: 2px solid #334155;
+        }
+
+        .logo {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #38bdf8;
+        }
+
+        .logo span {
+            color: #4ade80;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: #38bdf8;
+        }
+
+        /* MAIN CONTAINER */
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                padding: 15px;
+            }
+        }
+
+        /* CARDS */
+        .card {
+            background-color: #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #334155;
+        }
+
+        .card h2 {
+            margin-bottom: 15px;
+            color: #f1f5f9;
+            font-size: 1.2rem;
+        }
+
+        /* 3D CANVAS */
+        .canvas-container {
+            width: 100%;
+            height: 320px;
+            background: radial-gradient(circle, #334155 0%, #0f172a 100%);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* BUTTONS */
+        button {
+            cursor: pointer;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary { background-color: #0284c7; color: white; }
+        .btn-primary:hover { background-color: #0369a1; }
+
+        .btn-secondary { background-color: #334155; color: white; }
+        .btn-secondary:hover { background-color: #475569; }
+
+        .btn-success { background-color: #16a34a; color: white; }
+        .btn-success:hover { background-color: #15803d; }
+
+        /* INPUTS */
+        .drop-zone {
+            border: 2px dashed #0284c7;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            background-color: #0f172a;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+            background-color: #0f172a;
+            color: white;
+            outline: none;
+        }
+
+        .result-box {
+            background-color: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #22c55e;
+            margin-top: 15px;
+        }
+    </style>
 </head>
 <body>
 
-    <!-- NAVIGATSIYA BAR -->
+    <!-- NAVBAR -->
     <nav class="navbar">
         <div class="logo">
             <i class="fa-solid fa-cube"></i> Skin<span>URL</span>
         </div>
         <ul class="nav-links">
-            <li><a href="index.html" class="active"><i class="fa-solid fa-house"></i> Bosh sahifa</a></li>
-            <li><a href="pages/gallery.html"><i class="fa-solid fa-images"></i> Gallereya</a></li>
-            <li><a href="pages/editor.html"><i class="fa-solid fa-pen-ruler"></i> Redaktor</a></li>
-            <li><a href="pages/tools.html"><i class="fa-solid fa-wrench"></i> Instrumentlar</a></li>
+            <li><a href="#" class="active"><i class="fa-solid fa-house"></i> Bosh sahifa</a></li>
         </ul>
     </nav>
 
     <!-- ASOSIY BO'LIM -->
     <main class="main-container">
         
-        <!-- CHAP TARAFLIK: 3D VIEWER -->
-        <section class="viewer-section">
-            <h2>3D Skin Ko'rinishi</h2>
+        <!-- 3D VIEWER -->
+        <section class="card">
+            <h2><i class="fa-solid fa-cube"></i> 3D Skin Ko'rinishi</h2>
             <div class="canvas-container">
                 <canvas id="skin_container"></canvas>
             </div>
             
-            <div class="viewer-controls">
+            <div class="controls">
                 <button id="btn_rotate" class="btn-secondary"><i class="fa-solid fa-rotate"></i> Aylantirish</button>
                 <button id="btn_walk" class="btn-secondary"><i class="fa-solid fa-person-walking"></i> Yurish</button>
                 <button id="btn_run" class="btn-secondary"><i class="fa-solid fa-person-running"></i> Yugurish</button>
             </div>
         </section>
 
-        <!-- O'NG TARAFLIK: UPLOAD VA URL GENERATOR -->
-        <section class="tools-section">
-            <h2>Skin Yuklash & URL Yaratish</h2>
+        <!-- TOOLS & UPLOAD -->
+        <section class="card">
+            <h2><i class="fa-solid fa-upload"></i> Skin Yuklash</h2>
             
-            <div class="drop-zone" id="drop_zone">
-                <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
-                <p>Skin faylini (PNG) bu yerga tashlang yoki tanlang</p>
+            <div class="drop-zone">
+                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 35px; color: #0284c7; margin-bottom: 10px;"></i>
+                <p style="margin-bottom: 10px; font-size: 0.9rem;">Skin faylini (PNG) tanlang:</p>
                 <input type="file" id="skin_input" accept="image/png" hidden>
-                <button class="btn-primary" onclick="document.getElementById('skin_input').click()">Fayl Tanlash</button>
+                <button class="btn-primary" onclick="document.getElementById('skin_input').click()">Fayl Olish</button>
             </div>
 
-            <!-- NIK BO'YICHA QIDIRISH -->
-            <div class="nickname-box">
-                <label for="mc_username">Minecraft Nik bilan yuklash:</label>
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 0.9rem;">Minecraft Nik bilan yuklash:</label>
                 <div class="input-group">
                     <input type="text" id="mc_username" placeholder="Masalan: Steve">
                     <button id="btn_fetch_username" class="btn-primary">Yuklash</button>
                 </div>
             </div>
 
-            <!-- RESULT / URL GENERATED -->
             <div class="result-box" id="result_box" style="display: none;">
-                <h3>Tayyor Skin Havolasi (URL):</h3>
+                <h3 style="font-size: 0.9rem; color: #4ade80;">Skin Havolasi (URL):</h3>
                 <div class="input-group">
                     <input type="text" id="generated_url" readonly>
-                    <button id="btn_copy" class="btn-success"><i class="fa-solid fa-copy"></i> Nusxalash</button>
+                    <button id="btn_copy" class="btn-success"><i class="fa-solid fa-copy"></i> Copy</button>
                 </div>
             </div>
         </section>
 
     </main>
 
-    <script src="js/skin3d.js"></script>
-    <script src="js/app.js"></script>
+    <script>
+        let skinViewer;
+
+        window.addEventListener("DOMContentLoaded", () => {
+            // 3D Viewer Initsializatsiya
+            skinViewer = new skinview3d.SkinViewer({
+                canvas: document.getElementById("skin_container"),
+                width: 260,
+                height: 300,
+                skin: "https://bs-community.github.io/skinview3d/skins/steve.png"
+            });
+
+            skinViewer.camera.position.set(0, 10, 40);
+            skinViewer.animations.add(skinview3d.WalkingAnimation);
+
+            // Boshqaruv tugmalari
+            let isRotating = false;
+            document.getElementById("btn_rotate").addEventListener("click", () => {
+                isRotating = !isRotating;
+                skinViewer.autoRotate = isRotating;
+            });
+
+            document.getElementById("btn_walk").addEventListener("click", () => {
+                skinViewer.animations.clear();
+                skinViewer.animations.add(skinview3d.WalkingAnimation);
+            });
+
+            document.getElementById("btn_run").addEventListener("click", () => {
+                skinViewer.animations.clear();
+                skinViewer.animations.add(skinview3d.RunningAnimation);
+            });
+
+            // Fayldan yuklash
+            document.getElementById("skin_input").addEventListener("change", (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const objectUrl = URL.createObjectURL(file);
+                    skinViewer.loadSkin(objectUrl);
+                    document.getElementById("generated_url").value = objectUrl;
+                    document.getElementById("result_box").style.display = "block";
+                }
+            });
+
+            // Nik orqali yuklash
+            document.getElementById("btn_fetch_username").addEventListener("click", () => {
+                const username = document.getElementById("mc_username").value.trim();
+                if (username) {
+                    const skinUrl = `https://minotar.net/skin/${username}`;
+                    skinViewer.loadSkin(skinUrl);
+                    document.getElementById("generated_url").value = skinUrl;
+                    document.getElementById("result_box").style.display = "block";
+                }
+            });
+
+            // Nusxalash
+            document.getElementById("btn_copy").addEventListener("click", () => {
+                const copyText = document.getElementById("generated_url");
+                navigator.clipboard.writeText(copyText.value);
+                alert("Nusxalandi!");
+            });
+        });
+    </script>
 </body>
 </html>
